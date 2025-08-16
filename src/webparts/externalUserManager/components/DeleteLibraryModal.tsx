@@ -273,9 +273,9 @@ export const DeleteLibraryModal: React.FC<IDeleteLibraryModalProps> = ({
               <MessageBar messageBarType={MessageBarType.info}>
                 Deleting {libraries.length} librar{libraries.length !== 1 ? 'ies' : 'y'}...
                 <br />
-                Completed: {Object.values(deletionProgress).filter(status => status === 'completed').length}
-                {Object.values(deletionProgress).some(status => status === 'failed') && 
-                  ` • Failed: ${Object.values(deletionProgress).filter(status => status === 'failed').length}`
+                Completed: {Object.keys(deletionProgress).filter(id => deletionProgress[id] === 'completed').length}
+                {Object.keys(deletionProgress).some(id => deletionProgress[id] === 'failed') && 
+                  ` • Failed: ${Object.keys(deletionProgress).filter(id => deletionProgress[id] === 'failed').length}`
                 }
               </MessageBar>
             </Stack.Item>
