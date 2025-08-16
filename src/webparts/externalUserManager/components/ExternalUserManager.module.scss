@@ -1,0 +1,93 @@
+.externalUserManager {
+  padding: 20px;
+  background-color: #ffffff;
+  min-height: 400px;
+}
+
+.externalUserManager .ms-DetailsList {
+  background-color: #ffffff;
+}
+
+.externalUserManager .ms-DetailsHeader {
+  border-bottom: 2px solid #0078d4;
+}
+
+.externalUserManager .ms-DetailsRow:hover {
+  background-color: #f3f2f1;
+}
+
+.externalUserManager .ms-DetailsRow.is-selected {
+  background-color: #deecf9;
+}
+
+.externalUserManager .ms-CommandBar {
+  border-bottom: 1px solid #edebe9;
+  margin-bottom: 10px;
+}
+
+.externalUserManager .ms-MessageBar {
+  border-radius: 4px;
+}
+
+.libraryCard {
+  padding: 16px;
+  border: 1px solid #edebe9;
+  border-radius: 8px;
+  background-color: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.2s ease-in-out;
+}
+
+.libraryCard:hover {
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.permissionBadge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.permissionRead {
+  background-color: #e1f5fe;
+  color: #0277bd;
+}
+
+.permissionContribute {
+  background-color: #fff3e0;
+  color: #f57c00;
+}
+
+.permissionFullControl {
+  background-color: #ffebee;
+  color: #d32f2f;
+}
+
+.statsContainer {
+  padding: 12px 16px;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+  border-left: 4px solid #0078d4;
+}
+
+.actionButton {
+  margin-right: 8px;
+}
+
+.loadingContainer {
+  padding: 40px;
+  text-align: center;
+}
+
+@media (max-width: 768px) {
+  .externalUserManager {
+    padding: 10px;
+  }
+  
+  .externalUserManager .ms-DetailsList {
+    font-size: 14px;
+  }
+}

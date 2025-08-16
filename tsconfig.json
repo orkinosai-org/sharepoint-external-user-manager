@@ -1,0 +1,41 @@
+{
+  "compilerOptions": {
+    "target": "es5",
+    "forceConsistentCasingInFileNames": true,
+    "module": "esnext",
+    "moduleResolution": "node",
+    "allowJs": true,
+    "allowUnreachableCode": false,
+    "allowUnusedLabels": false,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitAny": true,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "sourceMap": true,
+    "strictNullChecks": false,
+    "suppressImplicitAnyIndexErrors": true,
+    "skipLibCheck": true,
+    "typeRoots": [
+      "./node_modules/@types",
+      "./node_modules/@microsoft"
+    ],
+    "types": [
+      "webpack-env"
+    ],
+    "lib": [
+      "es6",
+      "dom",
+      "es2015.collection"
+    ],
+    "jsx": "react"
+  },
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "lib"
+  ]
+}

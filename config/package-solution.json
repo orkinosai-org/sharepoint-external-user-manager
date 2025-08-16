@@ -1,0 +1,19 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/package-solution.schema.json",
+  "solution": {
+    "name": "sharepoint-external-user-manager-client-side-solution",
+    "id": "8b2e9a1a-0b1d-4c5e-9f2a-3b4c5d6e7f8a",
+    "version": "1.0.0.0",
+    "includeClientSideAssets": true,
+    "isDomainIsolated": false,
+    "developer": {
+      "name": "Orkinosai Organization",
+      "websiteUrl": "https://github.com/orkinosai-org",
+      "privacyUrl": "",
+      "termsOfUseUrl": ""
+    }
+  },
+  "paths": {
+    "zippedPackage": "solution/sharepoint-external-user-manager.sppkg"
+  }
+}
