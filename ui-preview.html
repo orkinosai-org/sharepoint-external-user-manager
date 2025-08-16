@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SharePoint External User Manager - UI Preview</title>
+    <link href="https://res-1.cdn.office.net/files/fabric-cdn-prod_20230815.002/css/fabric.min.css" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f3f2f1;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+        .header {
+            margin-bottom: 20px;
+        }
+        .title {
+            font-size: 28px;
+            font-weight: 600;
+            color: #323130;
+            margin: 0 0 8px 0;
+        }
+        .subtitle {
+            color: #666;
+            margin: 0;
+        }
+        .message-bar {
+            background-color: #e6f3ff;
+            border: 1px solid #0078d4;
+            border-radius: 4px;
+            padding: 12px 16px;
+            margin-bottom: 20px;
+            color: #004578;
+        }
+        .command-bar {
+            border-bottom: 1px solid #edebe9;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        .button {
+            padding: 8px 16px;
+            border: 1px solid #8a8886;
+            background: white;
+            border-radius: 2px;
+            cursor: pointer;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .button.primary {
+            background: #0078d4;
+            border-color: #0078d4;
+            color: white;
+        }
+        .button:hover {
+            background: #f3f2f1;
+        }
+        .button.primary:hover {
+            background: #106ebe;
+        }
+        .button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .refresh-button {
+            margin-left: auto;
+        }
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        .table th {
+            background: #f8f9fa;
+            border-bottom: 2px solid #0078d4;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #323130;
+        }
+        .table td {
+            padding: 12px;
+            border-bottom: 1px solid #edebe9;
+            vertical-align: top;
+        }
+        .table tr:hover {
+            background-color: #f3f2f1;
+        }
+        .library-name {
+            font-weight: 600;
+            color: #323130;
+            margin-bottom: 4px;
+        }
+        .library-desc {
+            color: #666;
+            font-size: 13px;
+        }
+        .site-url {
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            color: #666;
+        }
+        .permission-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+        }
+        .permission-read {
+            background-color: #e1f5fe;
+            color: #0277bd;
+        }
+        .permission-contribute {
+            background-color: #fff3e0;
+            color: #f57c00;
+        }
+        .permission-full {
+            background-color: #ffebee;
+            color: #d32f2f;
+        }
+        .stats {
+            display: flex;
+            gap: 20px;
+            color: #666;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+        .checkbox {
+            width: 16px;
+            height: 16px;
+            margin-right: 8px;
+        }
+        .icon {
+            width: 16px;
+            height: 16px;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="title">External User Manager</h1>
+            <p class="subtitle">Manage external users and shared libraries across SharePoint sites</p>
+        </div>
+
+        <div class="message-bar">
+            ℹ️ This is a preview of the External User Manager. Use the action buttons to manage libraries and external user access.
+        </div>
+
+        <div class="command-bar">
+            <button class="button primary">
+                <span class="icon">➕</span>
+                Add Library
+            </button>
+            <button class="button" disabled>
+                <span class="icon">🗑️</span>
+                Remove
+            </button>
+            <button class="button" disabled>
+                <span class="icon">👥</span>
+                Manage Users
+            </button>
+            <button class="button refresh-button">
+                <span class="icon">🔄</span>
+                Refresh
+            </button>
+        </div>
+
+        <table class="table">
+            <thead>
+                <tr>
+                    <th width="30"><input type="checkbox" class="checkbox"></th>
+                    <th>Library Name</th>
+                    <th>Site URL</th>
+                    <th width="100">External Users</th>
+                    <th>Owner</th>
+                    <th>Permission Level</th>
+                    <th>Last Modified</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><input type="checkbox" class="checkbox"></td>
+                    <td>
+                        <div class="library-name">Marketing Documents</div>
+                        <div class="library-desc">Marketing materials and campaigns shared with external partners</div>
+                    </td>
+                    <td class="site-url">/sites/marketing/documents</td>
+                    <td style="text-align: center;">5</td>
+                    <td>John Smith</td>
+                    <td><span class="permission-badge permission-contribute">CONTRIBUTE</span></td>
+                    <td>1/15/2024</td>
+                </tr>
+                <tr>
+                    <td><input type="checkbox" class="checkbox"></td>
+                    <td>
+                        <div class="library-name">Project Alpha Resources</div>
+                        <div class="library-desc">Confidential project documents for Project Alpha stakeholders</div>
+                    </td>
+                    <td class="site-url">/sites/projectalpha/shared</td>
+                    <td style="text-align: center;">3</td>
+                    <td>Sarah Johnson</td>
+                    <td><span class="permission-badge permission-read">READ</span></td>
+                    <td>1/10/2024</td>
+                </tr>
+                <tr>
+                    <td><input type="checkbox" class="checkbox"></td>
+                    <td>
+                        <div class="library-name">Vendor Collaboration Hub</div>
+                        <div class="library-desc">Document sharing space for vendor partnerships</div>
+                    </td>
+                    <td class="site-url">/sites/vendors/collaboration</td>
+                    <td style="text-align: center;">8</td>
+                    <td>Mike Davis</td>
+                    <td><span class="permission-badge permission-full">FULL CONTROL</span></td>
+                    <td>1/8/2024</td>
+                </tr>
+                <tr>
+                    <td><input type="checkbox" class="checkbox"></td>
+                    <td>
+                        <div class="library-name">Customer Support Files</div>
+                        <div class="library-desc">Documentation and resources for customer support team</div>
+                    </td>
+                    <td class="site-url">/sites/support/resources</td>
+                    <td style="text-align: center;">2</td>
+                    <td>Lisa Wilson</td>
+                    <td><span class="permission-badge permission-read">READ</span></td>
+                    <td>1/5/2024</td>
+                </tr>
+                <tr>
+                    <td><input type="checkbox" class="checkbox"></td>
+                    <td>
+                        <div class="library-name">Training Materials</div>
+                        <div class="library-desc">Training content shared with external training providers</div>
+                    </td>
+                    <td class="site-url">/sites/training/materials</td>
+                    <td style="text-align: center;">4</td>
+                    <td>Robert Brown</td>
+                    <td><span class="permission-badge permission-contribute">CONTRIBUTE</span></td>
+                    <td>1/3/2024</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="stats">
+            <span>Total Libraries: 5</span>
+            <span>Selected: 0</span>
+            <span>Total External Users: 22</span>
+        </div>
+
+        <div style="margin-top: 30px; padding: 20px; background-color: #f8f9fa; border-radius: 6px;">
+            <h3>✅ Implementation Status</h3>
+            <ul>
+                <li><strong>✅ Modern React Component:</strong> Built with React 17 and TypeScript</li>
+                <li><strong>✅ Fluent UI Integration:</strong> Uses Microsoft's design system</li>
+                <li><strong>✅ Mock Data Service:</strong> 5 sample libraries with realistic data</li>
+                <li><strong>✅ Action Placeholders:</strong> Add, Remove, Manage Users, Refresh</li>
+                <li><strong>✅ Responsive Design:</strong> Mobile-friendly layout</li>
+                <li><strong>✅ Selection Management:</strong> Multi-select with checkbox controls</li>
+                <li><strong>✅ Permission Styling:</strong> Color-coded permission levels</li>
+                <li><strong>✅ Loading States:</strong> Spinner and status messages</li>
+                <li><strong>✅ Modular Architecture:</strong> Ready for backend integration</li>
+            </ul>
+            
+            <h4>🚀 Ready for Development</h4>
+            <p>The project includes comprehensive documentation:</p>
+            <ul>
+                <li><strong>DEVELOPER_GUIDE.md:</strong> Complete onboarding guide</li>
+                <li><strong>ARCHITECTURE.md:</strong> Technical architecture overview</li>
+                <li><strong>Setup Scripts:</strong> Automated environment setup</li>
+                <li><strong>TypeScript Support:</strong> Full type safety and IntelliSense</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Simple interaction demo
+        document.querySelectorAll('.button').forEach(button => {
+            button.addEventListener('click', function() {
+                if (!this.disabled) {
+                    alert(`${this.textContent.trim()} functionality is implemented as placeholder.`);
+                }
+            });
+        });
+        
+        // Checkbox selection demo
+        const checkboxes = document.querySelectorAll('tbody .checkbox');
+        const removeBtn = document.querySelector('.button:nth-child(2)');
+        const manageBtn = document.querySelector('.button:nth-child(3)');
+        const statsSelected = document.querySelector('.stats span:nth-child(2)');
+        
+        function updateButtons() {
+            const checked = Array.from(checkboxes).filter(cb => cb.checked);
+            removeBtn.disabled = checked.length === 0;
+            manageBtn.disabled = checked.length !== 1;
+            statsSelected.textContent = `Selected: ${checked.length}`;
+        }
+        
+        checkboxes.forEach(cb => {
+            cb.addEventListener('change', updateButtons);
+        });
+    </script>
+</body>
+</html>
