@@ -62,29 +62,54 @@ src/
 
 ## Getting Started
 
+### Quick Setup
+For new developers, we provide setup scripts to help with environment configuration:
+
+**Windows:**
+```cmd
+setup.cmd
+```
+
+**macOS/Linux:**
+```bash
+./setup.sh
+```
+
 ### Prerequisites
-- Node.js (16.x or 18.x)
-- SharePoint Framework development environment
+- **Node.js**: Version 16.x or 18.x (⚠️ SPFx 1.18.2 doesn't support Node 20+)
+- **SharePoint Framework CLI**: `npm install -g @microsoft/sharepoint-framework-yeoman-generator`
+- **Gulp CLI**: `npm install -g gulp-cli`
 
 ### Installation
 ```bash
+# Clone and setup
+git clone <repository-url>
+cd sharepoint-external-user-manager
 npm install
 ```
 
 ### Development
 ```bash
+# Start development server with hot reload
 npm run serve
+
+# Access at: https://localhost:4321/temp/manifests.js
+# Add to SharePoint with: ?debug=true&noredir=true&debugManifestsFile=https://localhost:4321/temp/manifests.js
 ```
 
-### Build
+### Build & Package
 ```bash
+# Build for production
 npm run build
+
+# Create deployment package
+npm run package-solution
+
+# Package will be in sharepoint/solution/
 ```
 
-### Package
-```bash
-npm run package-solution
-```
+### New Developer Onboarding
+📖 **See [DEVELOPER_GUIDE.md](./DEVELOPER_GUIDE.md) for comprehensive setup and development instructions.**
 
 ## Next Steps
 
