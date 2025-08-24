@@ -18,3 +18,16 @@ export interface IExternalUser {
   lastAccess: Date;
   permissions: 'Read' | 'Contribute' | 'Full Control';
 }
+
+export interface IBulkUserAdditionRequest {
+  emails: string[];
+  permission: 'Read' | 'Contribute' | 'Full Control';
+  message?: string;
+}
+
+export interface IBulkUserAdditionResult {
+  email: string;
+  status: 'success' | 'already_member' | 'invitation_sent' | 'failed';
+  message: string;
+  error?: string;
+}

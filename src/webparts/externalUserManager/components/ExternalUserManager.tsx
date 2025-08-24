@@ -149,6 +149,34 @@ const ExternalUserManager: React.FC<IExternalUserManagerProps> = (props) => {
     }
   };
 
+  const handleBulkAddUsers = async (libraryId: string, emails: string[], permission: 'Read' | 'Contribute' | 'Full Control'): Promise<any> => {
+    try {
+      const results = await dataService.bulkAddExternalUsersToLibrary(libraryId, {
+        emails,
+        permission
+      });
+      
+      // Count successful additions to update library count
+      const successfulAdditions = results.filter(r => 
+        r.status === 'success' || r.status === 'invitation_sent'
+      ).length;
+      
+      // Update the external users count for the library
+      if (successfulAdditions > 0) {
+        setLibraries(prev => prev.map(lib => 
+          lib.id === libraryId 
+            ? { ...lib, externalUsersCount: lib.externalUsersCount + successfulAdditions }
+            : lib
+        ));
+      }
+      
+      return results;
+    } catch (error) {
+      console.error('Error bulk adding users:', error);
+      throw error;
+    }
+  };
+
   const handleRemoveUser = async (libraryId: string, userId: string): Promise<void> => {
     try {
       await dataService.removeExternalUserFromLibrary(libraryId, userId);
@@ -415,6 +443,7 @@ const ExternalUserManager: React.FC<IExternalUserManagerProps> = (props) => {
         library={selectedLibraries.length === 1 ? selectedLibraries[0] : null}
         onClose={() => setShowManageUsersModal(false)}
         onAddUser={handleAddUser}
+        onBulkAddUsers={handleBulkAddUsers}
         onRemoveUser={handleRemoveUser}
         onGetUsers={handleGetUsers}
         onSearchUsers={handleSearchUsers}
