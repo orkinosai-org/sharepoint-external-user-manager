@@ -1,6 +1,6 @@
 import { WebPartContext } from '@microsoft/sp-webpart-base';
 import { SPHttpClient, SPHttpClientResponse } from '@microsoft/sp-http';
-import { IExternalLibrary, IExternalUser } from '../models/IExternalLibrary';
+import { IExternalLibrary, IExternalUser, IBulkUserAdditionRequest, IBulkUserAdditionResult } from '../models/IExternalLibrary';
 import { AuditLogger } from './AuditLogger';
 
 /**
@@ -368,6 +368,153 @@ export class SharePointDataService {
     } catch (error) {
       this.auditLogger.logError('removeExternalUserFromLibrary', `Failed to remove external user ${userId} from library: ${libraryId}`, error);
       throw new Error(`Failed to remove user: ${error.message}`);
+    }
+  }
+
+  /**
+   * Bulk add external users to a library with specified permissions
+   */
+  public async bulkAddExternalUsersToLibrary(
+    libraryId: string, 
+    request: IBulkUserAdditionRequest
+  ): Promise<IBulkUserAdditionResult[]> {
+    const results: IBulkUserAdditionResult[] = [];
+    const sessionId = this.auditLogger.generateSessionId();
+    
+    this.auditLogger.logInfo('bulkAddExternalUsersToLibrary', 
+      `Starting bulk addition of ${request.emails.length} users to library: ${libraryId}`, {
+        libraryId,
+        emailCount: request.emails.length,
+        permission: request.permission,
+        sessionId
+      });
+
+    // Get existing users for the library to check for duplicates
+    let existingUsers: IExternalUser[] = [];
+    try {
+      existingUsers = await this.getExternalUsersForLibrary(libraryId);
+    } catch (error) {
+      this.auditLogger.logWarning('bulkAddExternalUsersToLibrary', 
+        'Failed to get existing users, proceeding without duplicate check', { error: error.message });
+    }
+
+    const existingEmails = new Set(existingUsers.map(user => user.email.toLowerCase()));
+
+    for (const email of request.emails) {
+      const trimmedEmail = email.trim().toLowerCase();
+      
+      if (!trimmedEmail) {
+        results.push({
+          email: email,
+          status: 'failed',
+          message: 'Empty email address',
+          error: 'Email address is required'
+        });
+        continue;
+      }
+
+      // Validate email format
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+        results.push({
+          email: email,
+          status: 'failed',
+          message: 'Invalid email format',
+          error: 'Please provide a valid email address'
+        });
+        continue;
+      }
+
+      // Check if user already has access
+      if (existingEmails.has(trimmedEmail)) {
+        results.push({
+          email: email,
+          status: 'already_member',
+          message: 'User already has access to this library'
+        });
+        
+        this.auditLogger.logInfo('bulkAddExternalUsersToLibrary', 
+          `User ${email} already has access to library`, {
+            libraryId,
+            email,
+            sessionId
+          });
+        continue;
+      }
+
+      // Attempt to add the user
+      try {
+        await this.addExternalUserToLibrary(libraryId, trimmedEmail, request.permission);
+        
+        // Check if user is external (not from same tenant)
+        const isExternal = await this.isExternalUser(trimmedEmail);
+        
+        results.push({
+          email: email,
+          status: isExternal ? 'invitation_sent' : 'success',
+          message: isExternal 
+            ? 'Invitation sent to external user' 
+            : 'User added successfully'
+        });
+
+        this.auditLogger.logInfo('bulkAddExternalUsersToLibrary', 
+          `Successfully added user ${email} to library`, {
+            libraryId,
+            email,
+            permission: request.permission,
+            isExternal,
+            sessionId
+          });
+
+      } catch (error) {
+        results.push({
+          email: email,
+          status: 'failed',
+          message: 'Failed to add user',
+          error: error.message
+        });
+
+        this.auditLogger.logError('bulkAddExternalUsersToLibrary', 
+          `Failed to add user ${email} to library`, {
+            libraryId,
+            email,
+            error: error.message,
+            sessionId
+          });
+      }
+    }
+
+    const successCount = results.filter(r => r.status === 'success' || r.status === 'invitation_sent').length;
+    const alreadyMemberCount = results.filter(r => r.status === 'already_member').length;
+    const failedCount = results.filter(r => r.status === 'failed').length;
+
+    this.auditLogger.logInfo('bulkAddExternalUsersToLibrary', 
+      `Bulk addition completed. Success: ${successCount}, Already member: ${alreadyMemberCount}, Failed: ${failedCount}`, {
+        libraryId,
+        totalEmails: request.emails.length,
+        successCount,
+        alreadyMemberCount,
+        failedCount,
+        sessionId
+      });
+
+    return results;
+  }
+
+  /**
+   * Check if a user is external (not from the same tenant)
+   */
+  private async isExternalUser(email: string): Promise<boolean> {
+    try {
+      // Simple heuristic: if email domain differs from current site domain, likely external
+      const currentDomain = this.context.pageContext.web.absoluteUrl.split('/')[2];
+      const emailDomain = email.split('@')[1];
+      
+      // If domains don't match, it's likely external
+      // This is a simplified check - in production you'd use Graph API for accurate determination
+      return !currentDomain.includes(emailDomain) && !emailDomain.includes(currentDomain.split('.')[0]);
+    } catch {
+      // If we can't determine, assume external for safety
+      return true;
     }
   }
 

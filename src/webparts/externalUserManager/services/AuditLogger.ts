@@ -138,7 +138,7 @@ export class AuditLogger {
   /**
    * Generate a unique session ID for tracking related operations
    */
-  private generateSessionId(): string {
+  public generateSessionId(): string {
     return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
   }
 

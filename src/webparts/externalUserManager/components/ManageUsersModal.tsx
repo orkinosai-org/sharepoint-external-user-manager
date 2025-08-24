@@ -32,6 +32,7 @@ export interface IManageUsersModalProps {
   library: IExternalLibrary | null;
   onClose: () => void;
   onAddUser: (libraryId: string, email: string, permission: 'Read' | 'Contribute' | 'Full Control') => Promise<void>;
+  onBulkAddUsers: (libraryId: string, emails: string[], permission: 'Read' | 'Contribute' | 'Full Control') => Promise<any>;
   onRemoveUser: (libraryId: string, userId: string) => Promise<void>;
   onGetUsers: (libraryId: string) => Promise<IExternalUser[]>;
   onSearchUsers: (query: string) => Promise<IExternalUser[]>;
@@ -39,7 +40,9 @@ export interface IManageUsersModalProps {
 
 export interface IAddUserFormData {
   email: string;
+  emails: string; // For bulk mode
   permission: 'Read' | 'Contribute' | 'Full Control';
+  isBulkMode: boolean;
 }
 
 export const ManageUsersModal: React.FC<IManageUsersModalProps> = ({
@@ -47,6 +50,7 @@ export const ManageUsersModal: React.FC<IManageUsersModalProps> = ({
   library,
   onClose,
   onAddUser,
+  onBulkAddUsers,
   onRemoveUser,
   onGetUsers,
   onSearchUsers
@@ -61,10 +65,13 @@ export const ManageUsersModal: React.FC<IManageUsersModalProps> = ({
   const [showAddUserForm, setShowAddUserForm] = useState<boolean>(false);
   const [addUserForm, setAddUserForm] = useState<IAddUserFormData>({
     email: '',
-    permission: 'Read'
+    emails: '',
+    permission: 'Read',
+    isBulkMode: false
   });
   const [addingUser, setAddingUser] = useState<boolean>(false);
   const [validationErrors, setValidationErrors] = useState<{[key: string]: string}>({});
+  const [bulkResults, setBulkResults] = useState<any[] | null>(null);
   
   // Remove User Confirmation
   const [showRemoveConfirmation, setShowRemoveConfirmation] = useState<boolean>(false);
@@ -88,6 +95,8 @@ export const ManageUsersModal: React.FC<IManageUsersModalProps> = ({
       setOperationMessage(null);
       setShowAddUserForm(false);
       setShowRemoveConfirmation(false);
+      setBulkResults(null);
+      setAddUserForm({ email: '', emails: '', permission: 'Read', isBulkMode: false });
       selection.setAllSelected(false);
     }
   }, [isOpen, library]);
@@ -126,25 +135,74 @@ export const ManageUsersModal: React.FC<IManageUsersModalProps> = ({
 
     setAddingUser(true);
     setError('');
+    setBulkResults(null);
     
     try {
-      await onAddUser(library.id, addUserForm.email.trim(), addUserForm.permission);
+      if (addUserForm.isBulkMode) {
+        // Parse emails from bulk input
+        const emails = parseEmailsFromText(addUserForm.emails);
+        
+        if (emails.length === 0) {
+          setError('Please enter at least one valid email address');
+          return;
+        }
+
+        // Call bulk add function
+        const results = await onBulkAddUsers(library.id, emails, addUserForm.permission);
+        
+        setBulkResults(results);
+        
+        const successCount = results.filter((r: any) => r.status === 'success' || r.status === 'invitation_sent').length;
+        const alreadyMemberCount = results.filter((r: any) => r.status === 'already_member').length;
+        const failedCount = results.filter((r: any) => r.status === 'failed').length;
+        
+        let message = `Bulk operation completed: `;
+        const messageParts = [];
+        if (successCount > 0) messageParts.push(`${successCount} added`);
+        if (alreadyMemberCount > 0) messageParts.push(`${alreadyMemberCount} already members`);
+        if (failedCount > 0) messageParts.push(`${failedCount} failed`);
+        
+        message += messageParts.join(', ');
+        
+        setOperationMessage({
+          message,
+          type: failedCount === 0 ? MessageBarType.success : MessageBarType.warning
+        });
+        
+      } else {
+        // Single user addition
+        await onAddUser(library.id, addUserForm.email.trim(), addUserForm.permission);
+        
+        setOperationMessage({
+          message: `Successfully added ${addUserForm.email} to ${library.name}`,
+          type: MessageBarType.success
+        });
+      }
       
-      setOperationMessage({
-        message: `Successfully added ${addUserForm.email} to ${library.name}`,
-        type: MessageBarType.success
-      });
+      // Reset form and reload users only on full success for single mode
+      // For bulk mode, keep the form open to show results
+      if (!addUserForm.isBulkMode) {
+        setAddUserForm({ email: '', emails: '', permission: 'Read', isBulkMode: false });
+        setShowAddUserForm(false);
+      }
       
-      // Reset form and reload users
-      setAddUserForm({ email: '', permission: 'Read' });
-      setShowAddUserForm(false);
       await loadUsers();
       
     } catch (err) {
-      setError(err.message || 'Failed to add user');
+      setError(err.message || 'Failed to add user(s)');
     } finally {
       setAddingUser(false);
     }
+  };
+
+  const parseEmailsFromText = (text: string): string[] => {
+    if (!text.trim()) return [];
+    
+    // Split by comma, semicolon, or newline, then filter and trim
+    return text
+      .split(/[,;\n]/)
+      .map(email => email.trim())
+      .filter(email => email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email));
   };
 
   const handleRemoveUsers = async (): Promise<void> => {
@@ -179,11 +237,23 @@ export const ManageUsersModal: React.FC<IManageUsersModalProps> = ({
   const validateAddUserForm = (): boolean => {
     const errors: {[key: string]: string} = {};
     
-    // Email validation
-    if (!addUserForm.email.trim()) {
-      errors.email = 'Email address is required';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(addUserForm.email.trim())) {
-      errors.email = 'Please enter a valid email address';
+    if (addUserForm.isBulkMode) {
+      // Bulk mode validation
+      if (!addUserForm.emails.trim()) {
+        errors.emails = 'Please enter at least one email address';
+      } else {
+        const emails = parseEmailsFromText(addUserForm.emails);
+        if (emails.length === 0) {
+          errors.emails = 'Please enter valid email addresses (separated by commas, semicolons, or newlines)';
+        }
+      }
+    } else {
+      // Single mode validation
+      if (!addUserForm.email.trim()) {
+        errors.email = 'Email address is required';
+      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(addUserForm.email.trim())) {
+        errors.email = 'Please enter a valid email address';
+      }
     }
     
     setValidationErrors(errors);
@@ -277,7 +347,20 @@ export const ManageUsersModal: React.FC<IManageUsersModalProps> = ({
       key: 'addUser',
       text: 'Add User',
       iconProps: { iconName: 'AddFriend' },
-      onClick: () => setShowAddUserForm(true)
+      onClick: () => {
+        setAddUserForm(prev => ({ ...prev, isBulkMode: false }));
+        setShowAddUserForm(true);
+      }
+    },
+    {
+      key: 'bulkAddUsers',
+      text: 'Bulk Add Users',
+      iconProps: { iconName: 'AddGroup' },
+      onClick: () => {
+        setAddUserForm(prev => ({ ...prev, isBulkMode: true }));
+        setBulkResults(null);
+        setShowAddUserForm(true);
+      }
     },
     {
       key: 'removeUser',
@@ -398,53 +481,146 @@ export const ManageUsersModal: React.FC<IManageUsersModalProps> = ({
                   <Stack tokens={{ childrenGap: 15 }}>
                     <Stack.Item>
                       <Text variant="mediumPlus" styles={{ root: { fontWeight: 'semibold' } }}>
-                        Add External User
+                        {addUserForm.isBulkMode ? 'Bulk Add External Users' : 'Add External User'}
                       </Text>
                     </Stack.Item>
                     
                     <Stack.Item>
-                      <Stack horizontal tokens={{ childrenGap: 10 }}>
+                      <Stack horizontal={!addUserForm.isBulkMode} tokens={{ childrenGap: 10 }}>
                         <Stack.Item grow>
-                          <TextField
-                            label="Email Address *"
-                            value={addUserForm.email}
-                            onChange={handleInputChange('email')}
-                            disabled={addingUser}
-                            errorMessage={validationErrors.email}
-                            placeholder="Enter user's email address"
-                            description="Enter the email address of the external user to invite"
-                          />
+                          {addUserForm.isBulkMode ? (
+                            <TextField
+                              label="Email Addresses *"
+                              multiline
+                              rows={6}
+                              value={addUserForm.emails}
+                              onChange={handleInputChange('emails')}
+                              disabled={addingUser}
+                              errorMessage={validationErrors.emails}
+                              placeholder="Enter multiple email addresses separated by commas, semicolons, or new lines&#10;&#10;Example:&#10;user1@external.com&#10;user2@partner.com, user3@vendor.com"
+                              description="Enter multiple email addresses for bulk invitation"
+                            />
+                          ) : (
+                            <TextField
+                              label="Email Address *"
+                              value={addUserForm.email}
+                              onChange={handleInputChange('email')}
+                              disabled={addingUser}
+                              errorMessage={validationErrors.email}
+                              placeholder="Enter user's email address"
+                              description="Enter the email address of the external user to invite"
+                            />
+                          )}
                         </Stack.Item>
-                        <Stack.Item>
-                          <Dropdown
-                            label="Permission Level *"
-                            options={permissionOptions}
-                            selectedKey={addUserForm.permission}
-                            onChange={handlePermissionChange}
-                            disabled={addingUser}
-                            styles={{ dropdown: { width: 150 } }}
-                          />
-                        </Stack.Item>
+                        {!addUserForm.isBulkMode && (
+                          <Stack.Item>
+                            <Dropdown
+                              label="Permission Level *"
+                              options={permissionOptions}
+                              selectedKey={addUserForm.permission}
+                              onChange={handlePermissionChange}
+                              disabled={addingUser}
+                              styles={{ dropdown: { width: 150 } }}
+                            />
+                          </Stack.Item>
+                        )}
                       </Stack>
                     </Stack.Item>
+
+                    {addUserForm.isBulkMode && (
+                      <Stack.Item>
+                        <Dropdown
+                          label="Permission Level for all users *"
+                          options={permissionOptions}
+                          selectedKey={addUserForm.permission}
+                          onChange={handlePermissionChange}
+                          disabled={addingUser}
+                          styles={{ dropdown: { width: 200 } }}
+                        />
+                      </Stack.Item>
+                    )}
+
+                    {/* Bulk Results Display */}
+                    {bulkResults && (
+                      <Stack.Item>
+                        <div style={{ 
+                          border: '1px solid #edebe9',
+                          borderRadius: '4px',
+                          padding: '12px',
+                          backgroundColor: '#fff'
+                        }}>
+                          <Text variant="medium" styles={{ root: { fontWeight: 'semibold', marginBottom: '8px' } }}>
+                            Bulk Operation Results:
+                          </Text>
+                          <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
+                            {bulkResults.map((result: any, index: number) => (
+                              <div key={index} style={{ 
+                                display: 'flex', 
+                                justifyContent: 'space-between', 
+                                padding: '4px 0',
+                                borderBottom: index < bulkResults.length - 1 ? '1px solid #f3f2f1' : 'none'
+                              }}>
+                                <Text variant="small">{result.email}</Text>
+                                <Text 
+                                  variant="small" 
+                                  styles={{ 
+                                    root: { 
+                                      color: result.status === 'success' || result.status === 'invitation_sent' 
+                                        ? '#107c10' 
+                                        : result.status === 'already_member' 
+                                        ? '#797775' 
+                                        : '#d13438',
+                                      fontWeight: 'semibold'
+                                    } 
+                                  }}
+                                >
+                                  {result.status === 'success' ? '✓ Added' :
+                                   result.status === 'invitation_sent' ? '✓ Invited' :
+                                   result.status === 'already_member' ? '- Already member' :
+                                   '✗ Failed'}
+                                </Text>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </Stack.Item>
+                    )}
 
                     <Stack.Item>
                       <Stack horizontal tokens={{ childrenGap: 10 }}>
                         <PrimaryButton
-                          text={addingUser ? 'Adding...' : 'Add User'}
+                          text={addingUser 
+                            ? (addUserForm.isBulkMode ? 'Adding Users...' : 'Adding...') 
+                            : (addUserForm.isBulkMode ? 'Add Users' : 'Add User')
+                          }
                           onClick={handleAddUser}
-                          disabled={addingUser || !addUserForm.email.trim()}
-                          iconProps={addingUser ? undefined : { iconName: 'AddFriend' }}
+                          disabled={addingUser || (addUserForm.isBulkMode 
+                            ? !addUserForm.emails.trim() 
+                            : !addUserForm.email.trim()
+                          )}
+                          iconProps={addingUser ? undefined : { iconName: addUserForm.isBulkMode ? 'AddGroup' : 'AddFriend' }}
                         />
                         <DefaultButton
                           text="Cancel"
                           onClick={() => {
                             setShowAddUserForm(false);
-                            setAddUserForm({ email: '', permission: 'Read' });
+                            setAddUserForm({ email: '', emails: '', permission: 'Read', isBulkMode: false });
                             setValidationErrors({});
+                            setBulkResults(null);
                           }}
                           disabled={addingUser}
                         />
+                        {bulkResults && (
+                          <DefaultButton
+                            text="Close Results"
+                            onClick={() => {
+                              setShowAddUserForm(false);
+                              setAddUserForm({ email: '', emails: '', permission: 'Read', isBulkMode: false });
+                              setValidationErrors({});
+                              setBulkResults(null);
+                            }}
+                          />
+                        )}
                       </Stack>
                     </Stack.Item>
                   </Stack>
