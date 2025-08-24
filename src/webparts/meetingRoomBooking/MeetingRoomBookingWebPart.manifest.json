@@ -1,0 +1,20 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/spfx/client-side-web-part-manifest.schema.json",
+  "id": "6c7d8e9f-0a1b-2c3d-4e5f-6a7b8c9d0e1f",
+  "alias": "MeetingRoomBookingWebPart",
+  "componentType": "WebPart",
+  "version": "*",
+  "manifestVersion": 2,
+  "requiresCustomScript": false,
+  "supportedHosts": ["SharePointWebPart", "TeamsPersonalApp", "TeamsTab"],
+  "preconfiguredEntries": [{
+    "groupId": "5c03119e-3074-46fd-976b-c60198311f70",
+    "group": { "default": "Advanced" },
+    "title": { "default": "Meeting Room & Resource Booking" },
+    "description": { "default": "Comprehensive room and resource booking system with Teams integration" },
+    "officeFabricIconFontName": "RoomList",
+    "properties": {
+      "description": "Meeting Room & Resource Booking"
+    }
+  }]
+}
