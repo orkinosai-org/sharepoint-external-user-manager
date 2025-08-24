@@ -23,6 +23,7 @@ import { MockDataService } from '../services/MockDataService';
 import { SharePointDataService } from '../services/SharePointDataService';
 import { CreateLibraryModal } from './CreateLibraryModal';
 import { DeleteLibraryModal } from './DeleteLibraryModal';
+import { ManageUsersModal } from './ManageUsersModal';
 import styles from './ExternalUserManager.module.scss';
 
 const ExternalUserManager: React.FC<IExternalUserManagerProps> = (props) => {
@@ -31,6 +32,7 @@ const ExternalUserManager: React.FC<IExternalUserManagerProps> = (props) => {
   const [selectedLibraries, setSelectedLibraries] = useState<IExternalLibrary[]>([]);
   const [showCreateModal, setShowCreateModal] = useState<boolean>(false);
   const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
+  const [showManageUsersModal, setShowManageUsersModal] = useState<boolean>(false);
   const [operationMessage, setOperationMessage] = useState<{ message: string; type: MessageBarType } | null>(null);
   const [dataService] = useState(() => new SharePointDataService(props.context));
   
@@ -128,6 +130,58 @@ const ExternalUserManager: React.FC<IExternalUserManagerProps> = (props) => {
     
     // Clear message after 5 seconds
     setTimeout(() => setOperationMessage(null), 5000);
+  };
+
+  const handleAddUser = async (libraryId: string, email: string, permission: 'Read' | 'Contribute' | 'Full Control'): Promise<void> => {
+    try {
+      await dataService.addExternalUserToLibrary(libraryId, email, permission);
+      
+      // Update the external users count for the library
+      setLibraries(prev => prev.map(lib => 
+        lib.id === libraryId 
+          ? { ...lib, externalUsersCount: lib.externalUsersCount + 1 }
+          : lib
+      ));
+      
+    } catch (error) {
+      console.error('Error adding user:', error);
+      throw error;
+    }
+  };
+
+  const handleRemoveUser = async (libraryId: string, userId: string): Promise<void> => {
+    try {
+      await dataService.removeExternalUserFromLibrary(libraryId, userId);
+      
+      // Update the external users count for the library
+      setLibraries(prev => prev.map(lib => 
+        lib.id === libraryId 
+          ? { ...lib, externalUsersCount: Math.max(0, lib.externalUsersCount - 1) }
+          : lib
+      ));
+      
+    } catch (error) {
+      console.error('Error removing user:', error);
+      throw error;
+    }
+  };
+
+  const handleGetUsers = async (libraryId: string) => {
+    try {
+      return await dataService.getExternalUsersForLibrary(libraryId);
+    } catch (error) {
+      console.error('Error getting users:', error);
+      throw error;
+    }
+  };
+
+  const handleSearchUsers = async (query: string) => {
+    try {
+      return await dataService.searchUsers(query);
+    } catch (error) {
+      console.error('Error searching users:', error);
+      throw error;
+    }
   };
 
   const columns: IColumn[] = [
@@ -248,9 +302,9 @@ const ExternalUserManager: React.FC<IExternalUserManagerProps> = (props) => {
       iconProps: { iconName: 'People' },
       disabled: selectedLibraries.length !== 1,
       onClick: () => {
-        // Placeholder for manage users functionality
+        // Open manage users modal for the selected library
         if (selectedLibraries.length === 1) {
-          alert(`Manage Users functionality will be implemented for: ${selectedLibraries[0].name}`);
+          setShowManageUsersModal(true);
         }
       }
     }
@@ -353,6 +407,17 @@ const ExternalUserManager: React.FC<IExternalUserManagerProps> = (props) => {
         onClose={() => setShowDeleteModal(false)}
         onLibrariesDeleted={handleLibrariesDeleted}
         onDeleteLibrary={handleDeleteLibrary}
+      />
+
+      {/* Manage Users Modal */}
+      <ManageUsersModal
+        isOpen={showManageUsersModal}
+        library={selectedLibraries.length === 1 ? selectedLibraries[0] : null}
+        onClose={() => setShowManageUsersModal(false)}
+        onAddUser={handleAddUser}
+        onRemoveUser={handleRemoveUser}
+        onGetUsers={handleGetUsers}
+        onSearchUsers={handleSearchUsers}
       />
     </div>
   );

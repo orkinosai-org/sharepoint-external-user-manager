@@ -85,3 +85,6 @@ obj
 
 # Styles Generated Code
 *.scss.ts
+
+# Temporary preview files
+*-preview.html

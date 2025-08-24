@@ -262,6 +262,195 @@ export class SharePointDataService {
     }
   }
 
+  /**
+   * Add external user to a library with specified permissions
+   */
+  public async addExternalUserToLibrary(libraryId: string, email: string, permission: 'Read' | 'Contribute' | 'Full Control'): Promise<void> {
+    try {
+      this.auditLogger.logInfo('addExternalUserToLibrary', `Adding external user ${email} to library: ${libraryId} with ${permission} permissions`);
+
+      // First, ensure the user exists in the site collection
+      const ensureUserEndpoint = `${this.context.pageContext.web.absoluteUrl}/_api/web/ensureuser`;
+      const ensureUserData = {
+        logonName: email
+      };
+
+      const ensureUserResponse: SPHttpClientResponse = await this.context.spHttpClient.post(
+        ensureUserEndpoint,
+        SPHttpClient.configurations.v1,
+        {
+          headers: {
+            'Accept': 'application/json;odata=verbose',
+            'Content-Type': 'application/json;odata=verbose',
+            'X-RequestDigest': await this.getRequestDigest()
+          },
+          body: JSON.stringify(ensureUserData)
+        }
+      );
+
+      if (!ensureUserResponse.ok) {
+        throw new Error(`Failed to ensure user exists: ${ensureUserResponse.status}`);
+      }
+
+      const userData = await ensureUserResponse.json();
+      const userId = userData.d?.Id || userData.Id;
+
+      if (!userId) {
+        throw new Error('Failed to get user ID after ensuring user');
+      }
+
+      // Get the role definition ID for the specified permission
+      const roleDefId = await this.getRoleDefinitionId(permission);
+
+      // Add role assignment to the library
+      const roleAssignmentEndpoint = `${this.context.pageContext.web.absoluteUrl}/_api/web/lists('${libraryId}')/roleassignments/addroleassignment(principalid=${userId},roledefid=${roleDefId})`;
+
+      const roleAssignmentResponse: SPHttpClientResponse = await this.context.spHttpClient.post(
+        roleAssignmentEndpoint,
+        SPHttpClient.configurations.v1,
+        {
+          headers: {
+            'Accept': 'application/json;odata=verbose',
+            'Content-Type': 'application/json;odata=verbose',
+            'X-RequestDigest': await this.getRequestDigest()
+          }
+        }
+      );
+
+      if (!roleAssignmentResponse.ok) {
+        throw new Error(`Failed to add role assignment: ${roleAssignmentResponse.status}`);
+      }
+
+      this.auditLogger.logInfo('addExternalUserToLibrary', `Successfully added user ${email} to library with ${permission} permissions`, {
+        libraryId,
+        email,
+        permission,
+        userId
+      });
+
+    } catch (error) {
+      this.auditLogger.logError('addExternalUserToLibrary', `Failed to add external user ${email} to library: ${libraryId}`, error);
+      throw new Error(`Failed to add user: ${error.message}`);
+    }
+  }
+
+  /**
+   * Remove external user from a library
+   */
+  public async removeExternalUserFromLibrary(libraryId: string, userId: string): Promise<void> {
+    try {
+      this.auditLogger.logInfo('removeExternalUserFromLibrary', `Removing external user ${userId} from library: ${libraryId}`);
+
+      // Remove role assignment from the library
+      const roleAssignmentEndpoint = `${this.context.pageContext.web.absoluteUrl}/_api/web/lists('${libraryId}')/roleassignments/removeroleassignment(principalid=${userId})`;
+
+      const response: SPHttpClientResponse = await this.context.spHttpClient.post(
+        roleAssignmentEndpoint,
+        SPHttpClient.configurations.v1,
+        {
+          headers: {
+            'Accept': 'application/json;odata=verbose',
+            'Content-Type': 'application/json;odata=verbose',
+            'X-RequestDigest': await this.getRequestDigest()
+          }
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Failed to remove role assignment: ${response.status}`);
+      }
+
+      this.auditLogger.logInfo('removeExternalUserFromLibrary', `Successfully removed user ${userId} from library`, {
+        libraryId,
+        userId
+      });
+
+    } catch (error) {
+      this.auditLogger.logError('removeExternalUserFromLibrary', `Failed to remove external user ${userId} from library: ${libraryId}`, error);
+      throw new Error(`Failed to remove user: ${error.message}`);
+    }
+  }
+
+  /**
+   * Search for users in the tenant (for adding external users)
+   */
+  public async searchUsers(query: string): Promise<IExternalUser[]> {
+    try {
+      this.auditLogger.logInfo('searchUsers', `Searching for users with query: ${query}`);
+
+      // For external users, we'll use a simple approach of validating the email format
+      // In a real implementation, you might use Microsoft Graph API or SharePoint People Picker
+      if (!query || !query.includes('@')) {
+        return [];
+      }
+
+      // Return a mock result for the search - in a real implementation this would query the directory
+      const mockUser: IExternalUser = {
+        id: 'search-result',
+        email: query,
+        displayName: query.split('@')[0], // Use part before @ as display name
+        invitedBy: this.context.pageContext.user.displayName,
+        invitedDate: new Date(),
+        lastAccess: new Date(),
+        permissions: 'Read'
+      };
+
+      this.auditLogger.logInfo('searchUsers', `Found 1 potential user for query: ${query}`);
+      return [mockUser];
+
+    } catch (error) {
+      this.auditLogger.logError('searchUsers', `Failed to search users with query: ${query}`, error);
+      throw new Error(`Failed to search users: ${error.message}`);
+    }
+  }
+
+  /**
+   * Get role definition ID for a permission level
+   */
+  private async getRoleDefinitionId(permission: 'Read' | 'Contribute' | 'Full Control'): Promise<number> {
+    try {
+      // Map permission to SharePoint role definition name
+      let roleName: string;
+      switch (permission) {
+        case 'Read':
+          roleName = 'Read';
+          break;
+        case 'Contribute':
+          roleName = 'Contribute';
+          break;
+        case 'Full Control':
+          roleName = 'Full Control';
+          break;
+        default:
+          roleName = 'Read';
+      }
+
+      const endpoint = `${this.context.pageContext.web.absoluteUrl}/_api/web/roledefinitions/getbyname('${roleName}')`;
+      
+      const response: SPHttpClientResponse = await this.context.spHttpClient.get(
+        endpoint,
+        SPHttpClient.configurations.v1
+      );
+
+      if (!response.ok) {
+        throw new Error(`Failed to get role definition: ${response.status}`);
+      }
+
+      const data = await response.json();
+      const roleDefId = data.d?.Id || data.Id;
+
+      if (!roleDefId) {
+        throw new Error(`Role definition ID not found for permission: ${permission}`);
+      }
+
+      return roleDefId;
+
+    } catch (error) {
+      this.auditLogger.logError('getRoleDefinitionId', `Failed to get role definition ID for permission: ${permission}`, error);
+      throw new Error(`Failed to get role definition: ${error.message}`);
+    }
+  }
+
   // Private helper methods
 
   private async checkExternalSharing(libraryId: string): Promise<{ hasExternal: boolean; externalCount: number }> {
