@@ -113,11 +113,23 @@ npm run package-solution
 
 ## Next Steps
 
-This foundation is ready for:
+This foundation is ready for backend integration with the designed architecture:
 
-1. **Backend Integration**: Replace MockDataService with actual SharePoint REST API calls
-2. **User Management**: Implement detailed user management functionality
-3. **Library Operations**: Add real add/remove library capabilities
+### 🏗️ Backend Architecture Design
+The complete backend design is documented in [`docs/`](./docs/) including:
+
+- **[Backend Architecture](./docs/backend-architecture.md)**: Scalable multi-tenant SaaS architecture using Azure Functions
+- **[API Design](./docs/backend-api-design.md)**: RESTful API specification with authentication and endpoints
+- **[SPFx Communication](./docs/spfx-backend-communication.md)**: Integration patterns between frontend and backend
+- **[User Journey](./docs/user-journey.md)**: Marketplace buyer onboarding and success metrics
+
+### Implementation Roadmap
+
+1. **Backend Development**: Implement Azure Functions API based on the [architecture design](./docs/backend-architecture.md)
+2. **SPFx Integration**: Replace MockDataService using the [communication patterns](./docs/spfx-backend-communication.md)
+3. **User Management**: Implement detailed user management functionality with backend API
+4. **Library Operations**: Add real add/remove library capabilities through backend services
+5. **Marketplace Launch**: Deploy following the [user journey](./docs/user-journey.md) specifications
 4. **Permissions Management**: Implement permission level changes
 5. **Bulk Operations**: Add bulk user management features
 
