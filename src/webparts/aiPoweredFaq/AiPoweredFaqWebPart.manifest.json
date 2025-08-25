@@ -1,0 +1,20 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/spfx/client-side-web-part-manifest.schema.json",
+  "id": "5b6c7d8e-9f0a-1b2c-3d4e-5f6a7b8c9d0e",
+  "alias": "AiPoweredFaqWebPart",
+  "componentType": "WebPart",
+  "version": "*",
+  "manifestVersion": 2,
+  "requiresCustomScript": false,
+  "supportedHosts": ["SharePointWebPart", "TeamsPersonalApp", "TeamsTab"],
+  "preconfiguredEntries": [{
+    "groupId": "5c03119e-3074-46fd-976b-c60198311f70",
+    "group": { "default": "Advanced" },
+    "title": { "default": "AI-Powered FAQ & Knowledge Base" },
+    "description": { "default": "Intelligent FAQ system with Azure AI integration for automated responses" },
+    "officeFabricIconFontName": "Robot",
+    "properties": {
+      "description": "AI-Powered FAQ & Knowledge Base"
+    }
+  }]
+}

@@ -1,0 +1,37 @@
+.aiPoweredFaq {
+  padding: 20px;
+  background-color: #ffffff;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+  h2, h3 {
+    color: #323130;
+    font-weight: 600;
+    margin: 0 0 20px 0;
+  }
+
+  h3 {
+    font-size: 16px;
+    margin: 0 0 10px 0;
+  }
+
+  .userMessage {
+    background-color: #f3f2f1;
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    text-align: right;
+  }
+
+  .aiMessage {
+    background-color: #e1f5fe;
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    border-left: 4px solid #0078d4;
+  }
+
+  @media (max-width: 768px) {
+    padding: 10px;
+  }
+}
