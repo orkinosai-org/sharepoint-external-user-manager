@@ -214,7 +214,7 @@ const ExternalUserManager: React.FC<IExternalUserManagerProps> = (props) => {
     }
   };
 
-  const handleUpdateUserMetadata = async (libraryId: string, userId: string, company?: string, project?: string): Promise<void> => {
+  const handleUpdateUserMetadata = async (libraryId: string, userId: string, company: string, project: string): Promise<void> => {
     try {
       await dataService.updateUserMetadata(libraryId, userId, company, project);
     } catch (error) {

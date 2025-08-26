@@ -67,7 +67,9 @@ export class MockDataService {
         invitedBy: 'john.smith@company.com',
         invitedDate: new Date('2023-12-01'),
         lastAccess: new Date('2024-01-14'),
-        permissions: 'Read'
+        permissions: 'Read',
+        company: 'Acme Corp',
+        project: 'Project Alpha'
       },
       {
         id: 'user2',
@@ -76,7 +78,20 @@ export class MockDataService {
         invitedBy: 'sarah.johnson@company.com',
         invitedDate: new Date('2023-11-15'),
         lastAccess: new Date('2024-01-12'),
-        permissions: 'Contribute'
+        permissions: 'Contribute',
+        company: 'Beta Solutions',
+        project: 'Implementation Phase 1'
+      },
+      {
+        id: 'user3',
+        email: 'consultant@agency.com',
+        displayName: 'External Consultant',
+        invitedBy: 'mike.davis@company.com',
+        invitedDate: new Date('2023-10-20'),
+        lastAccess: new Date('2024-01-10'),
+        permissions: 'Contribute',
+        company: 'Gamma Consulting',
+        project: 'Strategic Review'
       }
     ];
 
