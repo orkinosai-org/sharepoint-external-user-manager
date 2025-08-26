@@ -36,7 +36,7 @@ export interface IManageUsersModalProps {
   onRemoveUser: (libraryId: string, userId: string) => Promise<void>;
   onGetUsers: (libraryId: string) => Promise<IExternalUser[]>;
   onSearchUsers: (query: string) => Promise<IExternalUser[]>;
-  onUpdateUserMetadata: (libraryId: string, userId: string, company?: string, project?: string) => Promise<void>;
+  onUpdateUserMetadata: (libraryId: string, userId: string, company: string, project: string) => Promise<void>;
 }
 
 export interface IAddUserFormData {
