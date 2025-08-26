@@ -246,8 +246,17 @@ export class SharePointDataService {
             invitedBy: 'Unknown', // Would need additional API call to get this
             invitedDate: new Date(), // Would need additional API call to get this
             lastAccess: new Date(), // Would need additional API call to get this
-            permissions: this.mapPermissionLevel(permissions)
+            permissions: this.mapPermissionLevel(permissions),
+            company: undefined,
+            project: undefined
           };
+
+          // Retrieve stored metadata for this user
+          const metadata = await this.getUserMetadata(libraryId, assignment.Member.Id);
+          if (metadata) {
+            externalUser.company = metadata.company;
+            externalUser.project = metadata.project;
+          }
 
           externalUsers.push(externalUser);
         }
@@ -265,9 +274,15 @@ export class SharePointDataService {
   /**
    * Add external user to a library with specified permissions
    */
-  public async addExternalUserToLibrary(libraryId: string, email: string, permission: 'Read' | 'Contribute' | 'Full Control'): Promise<void> {
+  public async addExternalUserToLibrary(libraryId: string, email: string, permission: 'Read' | 'Contribute' | 'Full Control', company?: string, project?: string): Promise<void> {
     try {
-      this.auditLogger.logInfo('addExternalUserToLibrary', `Adding external user ${email} to library: ${libraryId} with ${permission} permissions`);
+      this.auditLogger.logInfo('addExternalUserToLibrary', `Adding external user ${email} to library: ${libraryId} with ${permission} permissions`, {
+        libraryId,
+        email,
+        permission,
+        company,
+        project
+      });
 
       // First, ensure the user exists in the site collection
       const ensureUserEndpoint = `${this.context.pageContext.web.absoluteUrl}/_api/web/ensureuser`;
@@ -321,16 +336,74 @@ export class SharePointDataService {
         throw new Error(`Failed to add role assignment: ${roleAssignmentResponse.status}`);
       }
 
+      // Store user metadata if company or project is provided
+      if (company || project) {
+        await this.storeUserMetadata(libraryId, email, userId, company, project);
+      }
+
       this.auditLogger.logInfo('addExternalUserToLibrary', `Successfully added user ${email} to library with ${permission} permissions`, {
         libraryId,
         email,
         permission,
-        userId
+        userId,
+        company,
+        project
       });
 
     } catch (error) {
       this.auditLogger.logError('addExternalUserToLibrary', `Failed to add external user ${email} to library: ${libraryId}`, error);
       throw new Error(`Failed to add user: ${error.message}`);
+    }
+  }
+
+  /**
+   * Store user metadata (company and project) in a SharePoint list
+   */
+  private async storeUserMetadata(libraryId: string, email: string, userId: number, company?: string, project?: string): Promise<void> {
+    try {
+      // For now, we'll store metadata in the audit log and browser storage
+      // In a production environment, this would be stored in a custom SharePoint list
+      const metadata = {
+        libraryId,
+        email,
+        userId,
+        company: company || '',
+        project: project || '',
+        timestamp: new Date().toISOString()
+      };
+
+      // Store in browser localStorage as a fallback (for demo purposes)
+      const storageKey = `userMetadata_${libraryId}_${userId}`;
+      localStorage.setItem(storageKey, JSON.stringify(metadata));
+
+      this.auditLogger.logInfo('storeUserMetadata', `Stored metadata for user ${email}`, metadata);
+    } catch (error) {
+      this.auditLogger.logError('storeUserMetadata', `Failed to store metadata for user ${email}`, error);
+      // Don't throw error as this is supplementary functionality
+    }
+  }
+
+  /**
+   * Retrieve user metadata (company and project)
+   */
+  private async getUserMetadata(libraryId: string, userId: number): Promise<{ company?: string; project?: string } | null> {
+    try {
+      // Retrieve from browser localStorage (for demo purposes)
+      const storageKey = `userMetadata_${libraryId}_${userId}`;
+      const stored = localStorage.getItem(storageKey);
+      
+      if (stored) {
+        const metadata = JSON.parse(stored);
+        return {
+          company: metadata.company || undefined,
+          project: metadata.project || undefined
+        };
+      }
+      
+      return null;
+    } catch (error) {
+      this.auditLogger.logError('getUserMetadata', `Failed to retrieve metadata for user ${userId}`, error);
+      return null;
     }
   }
 
@@ -443,7 +516,7 @@ export class SharePointDataService {
 
       // Attempt to add the user
       try {
-        await this.addExternalUserToLibrary(libraryId, trimmedEmail, request.permission);
+        await this.addExternalUserToLibrary(libraryId, trimmedEmail, request.permission, request.company, request.project);
         
         // Check if user is external (not from same tenant)
         const isExternal = await this.isExternalUser(trimmedEmail);
@@ -462,6 +535,8 @@ export class SharePointDataService {
             email,
             permission: request.permission,
             isExternal,
+            company: request.company,
+            project: request.project,
             sessionId
           });
 

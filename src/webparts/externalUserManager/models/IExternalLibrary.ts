@@ -17,12 +17,16 @@ export interface IExternalUser {
   invitedDate: Date;
   lastAccess: Date;
   permissions: 'Read' | 'Contribute' | 'Full Control';
+  company?: string;
+  project?: string;
 }
 
 export interface IBulkUserAdditionRequest {
   emails: string[];
   permission: 'Read' | 'Contribute' | 'Full Control';
   message?: string;
+  company?: string;
+  project?: string;
 }
 
 export interface IBulkUserAdditionResult {
