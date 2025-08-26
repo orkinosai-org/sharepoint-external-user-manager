@@ -31,8 +31,8 @@ export interface IManageUsersModalProps {
   isOpen: boolean;
   library: IExternalLibrary | null;
   onClose: () => void;
-  onAddUser: (libraryId: string, email: string, permission: 'Read' | 'Contribute' | 'Full Control') => Promise<void>;
-  onBulkAddUsers: (libraryId: string, emails: string[], permission: 'Read' | 'Contribute' | 'Full Control') => Promise<any>;
+  onAddUser: (libraryId: string, email: string, permission: 'Read' | 'Contribute' | 'Full Control', company?: string, project?: string) => Promise<void>;
+  onBulkAddUsers: (libraryId: string, emails: string[], permission: 'Read' | 'Contribute' | 'Full Control', company?: string, project?: string) => Promise<any>;
   onRemoveUser: (libraryId: string, userId: string) => Promise<void>;
   onGetUsers: (libraryId: string) => Promise<IExternalUser[]>;
   onSearchUsers: (query: string) => Promise<IExternalUser[]>;
@@ -43,6 +43,8 @@ export interface IAddUserFormData {
   emails: string; // For bulk mode
   permission: 'Read' | 'Contribute' | 'Full Control';
   isBulkMode: boolean;
+  company: string;
+  project: string;
 }
 
 export const ManageUsersModal: React.FC<IManageUsersModalProps> = ({
@@ -67,7 +69,9 @@ export const ManageUsersModal: React.FC<IManageUsersModalProps> = ({
     email: '',
     emails: '',
     permission: 'Read',
-    isBulkMode: false
+    isBulkMode: false,
+    company: '',
+    project: ''
   });
   const [addingUser, setAddingUser] = useState<boolean>(false);
   const [validationErrors, setValidationErrors] = useState<{[key: string]: string}>({});
@@ -96,7 +100,7 @@ export const ManageUsersModal: React.FC<IManageUsersModalProps> = ({
       setShowAddUserForm(false);
       setShowRemoveConfirmation(false);
       setBulkResults(null);
-      setAddUserForm({ email: '', emails: '', permission: 'Read', isBulkMode: false });
+      setAddUserForm({ email: '', emails: '', permission: 'Read', isBulkMode: false, company: '', project: '' });
       selection.setAllSelected(false);
     }
   }, [isOpen, library]);
@@ -148,7 +152,7 @@ export const ManageUsersModal: React.FC<IManageUsersModalProps> = ({
         }
 
         // Call bulk add function
-        const results = await onBulkAddUsers(library.id, emails, addUserForm.permission);
+        const results = await onBulkAddUsers(library.id, emails, addUserForm.permission, addUserForm.company?.trim() || undefined, addUserForm.project?.trim() || undefined);
         
         setBulkResults(results);
         
@@ -171,7 +175,7 @@ export const ManageUsersModal: React.FC<IManageUsersModalProps> = ({
         
       } else {
         // Single user addition
-        await onAddUser(library.id, addUserForm.email.trim(), addUserForm.permission);
+        await onAddUser(library.id, addUserForm.email.trim(), addUserForm.permission, addUserForm.company?.trim() || undefined, addUserForm.project?.trim() || undefined);
         
         setOperationMessage({
           message: `Successfully added ${addUserForm.email} to ${library.name}`,
@@ -182,7 +186,7 @@ export const ManageUsersModal: React.FC<IManageUsersModalProps> = ({
       // Reset form and reload users only on full success for single mode
       // For bulk mode, keep the form open to show results
       if (!addUserForm.isBulkMode) {
-        setAddUserForm({ email: '', emails: '', permission: 'Read', isBulkMode: false });
+        setAddUserForm({ email: '', emails: '', permission: 'Read', isBulkMode: false, company: '', project: '' });
         setShowAddUserForm(false);
       }
       
@@ -325,6 +329,28 @@ export const ManageUsersModal: React.FC<IManageUsersModalProps> = ({
       isResizable: true,
       onRender: (item: IExternalUser) => (
         <Text variant="small">{item.permissions}</Text>
+      )
+    },
+    {
+      key: 'company',
+      name: 'Company',
+      fieldName: 'company',
+      minWidth: 120,
+      maxWidth: 180,
+      isResizable: true,
+      onRender: (item: IExternalUser) => (
+        <Text variant="small">{item.company || '-'}</Text>
+      )
+    },
+    {
+      key: 'project',
+      name: 'Project',
+      fieldName: 'project',
+      minWidth: 120,
+      maxWidth: 180,
+      isResizable: true,
+      onRender: (item: IExternalUser) => (
+        <Text variant="small">{item.project || '-'}</Text>
       )
     },
     {
@@ -540,6 +566,32 @@ export const ManageUsersModal: React.FC<IManageUsersModalProps> = ({
                       </Stack.Item>
                     )}
 
+                    {/* Company and Project fields for both single and bulk mode */}
+                    <Stack.Item>
+                      <Stack horizontal tokens={{ childrenGap: 10 }}>
+                        <Stack.Item grow>
+                          <TextField
+                            label="Company"
+                            value={addUserForm.company}
+                            onChange={handleInputChange('company')}
+                            disabled={addingUser}
+                            placeholder="Enter company name"
+                            description="Company or organization the user belongs to"
+                          />
+                        </Stack.Item>
+                        <Stack.Item grow>
+                          <TextField
+                            label="Project"
+                            value={addUserForm.project}
+                            onChange={handleInputChange('project')}
+                            disabled={addingUser}
+                            placeholder="Enter project name"
+                            description="Project or initiative the user is associated with"
+                          />
+                        </Stack.Item>
+                      </Stack>
+                    </Stack.Item>
+
                     {/* Bulk Results Display */}
                     {bulkResults && (
                       <Stack.Item>
@@ -604,7 +656,7 @@ export const ManageUsersModal: React.FC<IManageUsersModalProps> = ({
                           text="Cancel"
                           onClick={() => {
                             setShowAddUserForm(false);
-                            setAddUserForm({ email: '', emails: '', permission: 'Read', isBulkMode: false });
+                            setAddUserForm({ email: '', emails: '', permission: 'Read', isBulkMode: false, company: '', project: '' });
                             setValidationErrors({});
                             setBulkResults(null);
                           }}
@@ -615,7 +667,7 @@ export const ManageUsersModal: React.FC<IManageUsersModalProps> = ({
                             text="Close Results"
                             onClick={() => {
                               setShowAddUserForm(false);
-                              setAddUserForm({ email: '', emails: '', permission: 'Read', isBulkMode: false });
+                              setAddUserForm({ email: '', emails: '', permission: 'Read', isBulkMode: false, company: '', project: '' });
                               setValidationErrors({});
                               setBulkResults(null);
                             }}

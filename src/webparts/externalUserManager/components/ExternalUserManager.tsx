@@ -132,9 +132,9 @@ const ExternalUserManager: React.FC<IExternalUserManagerProps> = (props) => {
     setTimeout(() => setOperationMessage(null), 5000);
   };
 
-  const handleAddUser = async (libraryId: string, email: string, permission: 'Read' | 'Contribute' | 'Full Control'): Promise<void> => {
+  const handleAddUser = async (libraryId: string, email: string, permission: 'Read' | 'Contribute' | 'Full Control', company?: string, project?: string): Promise<void> => {
     try {
-      await dataService.addExternalUserToLibrary(libraryId, email, permission);
+      await dataService.addExternalUserToLibrary(libraryId, email, permission, company, project);
       
       // Update the external users count for the library
       setLibraries(prev => prev.map(lib => 
@@ -149,11 +149,13 @@ const ExternalUserManager: React.FC<IExternalUserManagerProps> = (props) => {
     }
   };
 
-  const handleBulkAddUsers = async (libraryId: string, emails: string[], permission: 'Read' | 'Contribute' | 'Full Control'): Promise<any> => {
+  const handleBulkAddUsers = async (libraryId: string, emails: string[], permission: 'Read' | 'Contribute' | 'Full Control', company?: string, project?: string): Promise<any> => {
     try {
       const results = await dataService.bulkAddExternalUsersToLibrary(libraryId, {
         emails,
-        permission
+        permission,
+        company,
+        project
       });
       
       // Count successful additions to update library count
