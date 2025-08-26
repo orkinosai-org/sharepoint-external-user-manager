@@ -81,6 +81,12 @@ export const ManageUsersModal: React.FC<IManageUsersModalProps> = ({
   const [showRemoveConfirmation, setShowRemoveConfirmation] = useState<boolean>(false);
   const [removingUser, setRemovingUser] = useState<boolean>(false);
 
+  // Edit User Metadata
+  const [showEditModal, setShowEditModal] = useState<boolean>(false);
+  const [editingUser, setEditingUser] = useState<IExternalUser | null>(null);
+  const [editForm, setEditForm] = useState<{ company: string; project: string }>({ company: '', project: '' });
+  const [updatingUser, setUpdatingUser] = useState<boolean>(false);
+
   const [selection] = useState(new Selection({
     onSelectionChanged: () => {
       setSelectedUsers(selection.getSelection() as IExternalUser[]);
@@ -99,6 +105,8 @@ export const ManageUsersModal: React.FC<IManageUsersModalProps> = ({
       setOperationMessage(null);
       setShowAddUserForm(false);
       setShowRemoveConfirmation(false);
+      setShowEditModal(false);
+      setEditingUser(null);
       setBulkResults(null);
       setAddUserForm({ email: '', emails: '', permission: 'Read', isBulkMode: false, company: '', project: '' });
       selection.setAllSelected(false);
@@ -291,9 +299,64 @@ export const ManageUsersModal: React.FC<IManageUsersModalProps> = ({
   };
 
   const handleClose = (): void => {
-    if (!addingUser && !removingUser && !loading) {
+    if (!addingUser && !removingUser && !updatingUser && !loading) {
       onClose();
     }
+  };
+
+  const handleEditUser = (user: IExternalUser): void => {
+    setEditingUser(user);
+    setEditForm({
+      company: user.company || '',
+      project: user.project || ''
+    });
+    setShowEditModal(true);
+  };
+
+  const handleUpdateUserMetadata = async (): Promise<void> => {
+    if (!editingUser || !library) return;
+
+    setUpdatingUser(true);
+    try {
+      // Call update user metadata service method (to be implemented)
+      await updateUserMetadata(library.id, editingUser.id, editForm.company, editForm.project);
+
+      // Update the local users list
+      setUsers(prev => prev.map(user => 
+        user.id === editingUser.id 
+          ? { ...user, company: editForm.company || undefined, project: editForm.project || undefined }
+          : user
+      ));
+
+      setOperationMessage({
+        message: `Successfully updated metadata for ${editingUser.displayName}`,
+        type: MessageBarType.success
+      });
+
+      setShowEditModal(false);
+      setEditingUser(null);
+    } catch (error) {
+      setOperationMessage({
+        message: `Failed to update metadata: ${error.message}`,
+        type: MessageBarType.error
+      });
+    } finally {
+      setUpdatingUser(false);
+    }
+  };
+
+  const updateUserMetadata = async (libraryId: string, userId: string, company: string, project: string): Promise<void> => {
+    // For now, update localStorage directly
+    // In production, this would call a SharePoint API
+    const storageKey = `userMetadata_${libraryId}_${userId}`;
+    const metadata = {
+      libraryId,
+      userId,
+      company,
+      project,
+      timestamp: new Date().toISOString()
+    };
+    localStorage.setItem(storageKey, JSON.stringify(metadata));
   };
 
   // Define columns for the users list
@@ -364,6 +427,28 @@ export const ManageUsersModal: React.FC<IManageUsersModalProps> = ({
         <Text variant="small">
           {item.invitedDate.toLocaleDateString()}
         </Text>
+      )
+    },
+    {
+      key: 'actions',
+      name: 'Actions',
+      fieldName: 'actions',
+      minWidth: 100,
+      maxWidth: 120,
+      isResizable: false,
+      onRender: (item: IExternalUser) => (
+        <Stack horizontal tokens={{ childrenGap: 5 }}>
+          <IconButton
+            iconProps={{ iconName: 'Edit' }}
+            title="Edit Company/Project"
+            ariaLabel="Edit user metadata"
+            onClick={() => handleEditUser(item)}
+            styles={{
+              root: { minWidth: 24, width: 24, height: 24 },
+              icon: { fontSize: 12 }
+            }}
+          />
+        </Stack>
       )
     }
   ];
@@ -716,6 +801,50 @@ export const ManageUsersModal: React.FC<IManageUsersModalProps> = ({
             onClick={() => setShowRemoveConfirmation(false)}
             text="Cancel"
             disabled={removingUser}
+          />
+        </DialogFooter>
+      </Dialog>
+
+      {/* Edit User Metadata Dialog */}
+      <Dialog
+        hidden={!showEditModal}
+        onDismiss={() => setShowEditModal(false)}
+        dialogContentProps={{
+          type: DialogType.normal,
+          title: 'Edit User Metadata',
+          subText: `Update company and project information for ${editingUser?.displayName || editingUser?.email}`
+        }}
+        modalProps={{
+          isBlocking: updatingUser
+        }}
+        minWidth={400}
+      >
+        <Stack tokens={{ childrenGap: 15 }}>
+          <TextField
+            label="Company"
+            value={editForm.company}
+            onChange={(event, newValue) => setEditForm(prev => ({ ...prev, company: newValue || '' }))}
+            disabled={updatingUser}
+            placeholder="Enter company name"
+          />
+          <TextField
+            label="Project"
+            value={editForm.project}
+            onChange={(event, newValue) => setEditForm(prev => ({ ...prev, project: newValue || '' }))}
+            disabled={updatingUser}
+            placeholder="Enter project name"
+          />
+        </Stack>
+        <DialogFooter>
+          <PrimaryButton
+            onClick={handleUpdateUserMetadata}
+            text={updatingUser ? 'Updating...' : 'Update'}
+            disabled={updatingUser}
+          />
+          <DefaultButton
+            onClick={() => setShowEditModal(false)}
+            text="Cancel"
+            disabled={updatingUser}
           />
         </DialogFooter>
       </Dialog>
