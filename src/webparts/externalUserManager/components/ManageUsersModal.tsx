@@ -36,6 +36,7 @@ export interface IManageUsersModalProps {
   onRemoveUser: (libraryId: string, userId: string) => Promise<void>;
   onGetUsers: (libraryId: string) => Promise<IExternalUser[]>;
   onSearchUsers: (query: string) => Promise<IExternalUser[]>;
+  onUpdateUserMetadata: (libraryId: string, userId: string, company: string, project: string) => Promise<void>;
 }
 
 export interface IAddUserFormData {
@@ -55,7 +56,8 @@ export const ManageUsersModal: React.FC<IManageUsersModalProps> = ({
   onBulkAddUsers,
   onRemoveUser,
   onGetUsers,
-  onSearchUsers
+  onSearchUsers,
+  onUpdateUserMetadata
 }) => {
   const [users, setUsers] = useState<IExternalUser[]>([]);
   const [selectedUsers, setSelectedUsers] = useState<IExternalUser[]>([]);
@@ -318,8 +320,8 @@ export const ManageUsersModal: React.FC<IManageUsersModalProps> = ({
 
     setUpdatingUser(true);
     try {
-      // Call update user metadata service method (to be implemented)
-      await updateUserMetadata(library.id, editingUser.id, editForm.company, editForm.project);
+      // Call update user metadata service method
+      await onUpdateUserMetadata(library.id, editingUser.id, editForm.company, editForm.project);
 
       // Update the local users list
       setUsers(prev => prev.map(user => 
@@ -343,20 +345,6 @@ export const ManageUsersModal: React.FC<IManageUsersModalProps> = ({
     } finally {
       setUpdatingUser(false);
     }
-  };
-
-  const updateUserMetadata = async (libraryId: string, userId: string, company: string, project: string): Promise<void> => {
-    // For now, update localStorage directly
-    // In production, this would call a SharePoint API
-    const storageKey = `userMetadata_${libraryId}_${userId}`;
-    const metadata = {
-      libraryId,
-      userId,
-      company,
-      project,
-      timestamp: new Date().toISOString()
-    };
-    localStorage.setItem(storageKey, JSON.stringify(metadata));
   };
 
   // Define columns for the users list

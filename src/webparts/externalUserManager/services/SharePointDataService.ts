@@ -357,6 +357,41 @@ export class SharePointDataService {
   }
 
   /**
+   * Update user metadata (company and project) - public method
+   */
+  public async updateUserMetadata(libraryId: string, userId: string, company: string, project: string): Promise<void> {
+    try {
+      // Convert userId to number for storage consistency
+      const userIdNum = parseInt(userId, 10);
+      
+      // Get user's email for audit logging
+      let userEmail = 'Unknown';
+      try {
+        const users = await this.getExternalUsersForLibrary(libraryId);
+        const user = users.find(u => u.id === userId);
+        if (user) {
+          userEmail = user.email;
+        }
+      } catch (error) {
+        // Continue with metadata update even if we can't get email
+        this.auditLogger.logWarning('updateUserMetadata', 'Could not retrieve user email for audit', { userId });
+      }
+
+      await this.storeUserMetadata(libraryId, userEmail, userIdNum, company, project);
+      
+      this.auditLogger.logInfo('updateUserMetadata', `Successfully updated metadata for user ${userId}`, {
+        libraryId,
+        userId,
+        company,
+        project
+      });
+    } catch (error) {
+      this.auditLogger.logError('updateUserMetadata', `Failed to update metadata for user ${userId}`, error);
+      throw new Error(`Failed to update user metadata: ${error.message}`);
+    }
+  }
+
+  /**
    * Store user metadata (company and project) in a SharePoint list
    */
   private async storeUserMetadata(libraryId: string, email: string, userId: number, company?: string, project?: string): Promise<void> {
