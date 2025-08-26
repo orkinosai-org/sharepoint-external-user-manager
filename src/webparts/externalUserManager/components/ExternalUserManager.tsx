@@ -214,6 +214,15 @@ const ExternalUserManager: React.FC<IExternalUserManagerProps> = (props) => {
     }
   };
 
+  const handleUpdateUserMetadata = async (libraryId: string, userId: string, company?: string, project?: string): Promise<void> => {
+    try {
+      await dataService.updateUserMetadata(libraryId, userId, company, project);
+    } catch (error) {
+      console.error('Error updating user metadata:', error);
+      throw error;
+    }
+  };
+
   const columns: IColumn[] = [
     {
       key: 'name',
@@ -449,6 +458,7 @@ const ExternalUserManager: React.FC<IExternalUserManagerProps> = (props) => {
         onRemoveUser={handleRemoveUser}
         onGetUsers={handleGetUsers}
         onSearchUsers={handleSearchUsers}
+        onUpdateUserMetadata={handleUpdateUserMetadata}
       />
     </div>
   );
