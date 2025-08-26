@@ -384,6 +384,37 @@ export class SharePointDataService {
   }
 
   /**
+   * Update user metadata (company and project) for an existing user
+   */
+  public async updateUserMetadata(libraryId: string, userId: string, company?: string, project?: string): Promise<void> {
+    try {
+      this.auditLogger.logInfo('updateUserMetadata', `Updating metadata for user ${userId} in library: ${libraryId}`, {
+        libraryId,
+        userId,
+        company,
+        project
+      });
+
+      // For now, update localStorage directly (for demo purposes)
+      // In production, this would call a SharePoint API
+      const storageKey = `userMetadata_${libraryId}_${userId}`;
+      const metadata = {
+        libraryId,
+        userId,
+        company: company || '',
+        project: project || '',
+        timestamp: new Date().toISOString()
+      };
+      localStorage.setItem(storageKey, JSON.stringify(metadata));
+
+      this.auditLogger.logInfo('updateUserMetadata', `Successfully updated metadata for user ${userId}`, metadata);
+    } catch (error) {
+      this.auditLogger.logError('updateUserMetadata', `Failed to update metadata for user ${userId}`, error);
+      throw new Error(`Failed to update user metadata: ${error.message}`);
+    }
+  }
+
+  /**
    * Retrieve user metadata (company and project)
    */
   private async getUserMetadata(libraryId: string, userId: number): Promise<{ company?: string; project?: string } | null> {

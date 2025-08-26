@@ -1,14 +1,34 @@
 # SharePoint External User Manager
 
-A modern SharePoint Framework (SPFx) web part built with React and Fluent UI for managing external users and shared libraries.
+A modern SharePoint Framework (SPFx) web part built with React and Fluent UI for managing external users and shared libraries with comprehensive metadata tracking.
 
 ## Features
 
 - **Modern UI**: Built with Fluent UI (Fabric) components for a clean, professional interface
 - **Library Management**: View and manage external libraries with detailed information
 - **User Management**: Track external users and their access permissions
+- **📊 Metadata Tracking**: Company and Project metadata for external users
 - **Responsive Design**: Works across desktop and mobile devices
 - **Modular Architecture**: Ready for backend integration
+
+## 🆕 Company and Project Metadata Features
+
+### User Organization
+- **Company Tracking**: Associate external users with their companies/organizations
+- **Project Assignment**: Link users to specific projects or initiatives
+- **Visual Display**: Company and Project columns in user management interface
+
+### Management Capabilities
+- **Add Users with Metadata**: Specify company and project when inviting new users
+- **Bulk Operations**: Apply metadata to multiple users simultaneously
+- **Edit Metadata**: Update company and project information for existing users
+- **Persistent Storage**: Metadata stored in browser localStorage (demo) or SharePoint lists (production)
+
+### Use Cases
+- **Project Management**: Track which external users belong to which projects
+- **Vendor Management**: Organize users by their companies for relationship management
+- **Compliance**: Maintain records of user affiliations for audit purposes
+- **Access Reviews**: Easily identify users by company/project during reviews
 
 ## Project Structure
 
