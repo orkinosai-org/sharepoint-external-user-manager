@@ -259,16 +259,23 @@ import styles from './ExternalUserManager.module.scss';
 
 ### SharePoint Integration
 ```typescript
-// Future SharePoint API integration
+// SharePoint API integration using PnPjs with metadata support
 export class SharePointDataService {
   constructor(private context: WebPartContext) {}
   
   public async getExternalLibraries(): Promise<IExternalLibrary[]> {
-    const response = await this.context.spHttpClient.get(
-      `${this.context.pageContext.web.absoluteUrl}/_api/web/lists`,
-      SPHttpClient.configurations.v1
-    );
-    return this.transformResponse(await response.json());
+    const lists = await this.sp.web.lists
+      .filter("BaseTemplate eq 101 and Hidden eq false")
+      .select("Id", "Title", "Description", "DefaultViewUrl", "LastItemModifiedDate", "ItemCount", "Created")
+      .expand("RoleAssignments/Member")
+      .get();
+    return this.transformResponse(lists);
+  }
+
+  // Enhanced with metadata support for Company and Project tracking
+  public async updateUserMetadata(libraryId: string, userId: string, company: string, project: string): Promise<void> {
+    // Store user metadata with audit logging
+    await this.storeUserMetadata(libraryId, email, userIdNum, company, project);
   }
 }
 ```
