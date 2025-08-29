@@ -88,3 +88,9 @@ obj
 
 # Temporary preview files
 *-preview.html
+# Temporary files
+/tmp/
+*.tmp
+
+# Backup files
+*.backup
