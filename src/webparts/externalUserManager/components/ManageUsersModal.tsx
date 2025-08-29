@@ -320,7 +320,9 @@ export const ManageUsersModal: React.FC<IManageUsersModalProps> = ({
 
     setUpdatingUser(true);
     try {
+
       // Call the service method through the prop
+
       await onUpdateUserMetadata(library.id, editingUser.id, editForm.company, editForm.project);
 
       // Update the local users list

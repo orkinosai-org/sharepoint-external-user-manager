@@ -299,6 +299,7 @@ export class SharePointDataService {
   }
 
   /**
+
    * Remove external user from a library
    */
   public async removeExternalUserFromLibrary(libraryId: string, userId: string): Promise<void> {
@@ -321,6 +322,7 @@ export class SharePointDataService {
   }
 
   /**
+
    * Update user metadata (company and project) - public method
    */
   public async updateUserMetadata(libraryId: string, userId: string, company: string, project: string): Promise<void> {
