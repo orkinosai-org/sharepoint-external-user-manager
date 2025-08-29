@@ -91,3 +91,6 @@ obj
 # Temporary files
 /tmp/
 *.tmp
+
+# Backup files
+*.backup
