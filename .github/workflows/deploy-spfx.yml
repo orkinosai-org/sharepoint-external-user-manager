@@ -122,9 +122,17 @@ jobs:
         SPO_PASSWORD: ${{ secrets.SPO_PASSWORD }}
       run: |
         try {
-          Write-Host "Connecting to SharePoint Online..."
+          Write-Host "=============================================="
+          Write-Host "🚀 SharePoint Framework Solution Deployment"
+          Write-Host "=============================================="
+          Write-Host "Deployment Started: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss UTC')"
           Write-Host "SharePoint URL: $env:SPO_URL"
           Write-Host "Username: $env:SPO_USERNAME"
+          Write-Host "Workflow Run: ${{ github.run_number }}"
+          Write-Host "Commit SHA: ${{ github.sha }}"
+          Write-Host ""
+          
+          Write-Host "🔗 Connecting to SharePoint Online..."
           
           # Convert password to secure string
           $securePassword = ConvertTo-SecureString $env:SPO_PASSWORD -AsPlainText -Force
@@ -177,34 +185,56 @@ jobs:
           }
           
           # Upload and publish the app
-          Write-Host "Uploading package to app catalog..."
+          Write-Host "📦 Uploading package to app catalog..."
+          Write-Host "Target: $env:SPO_URL App Catalog"
+          $uploadStartTime = Get-Date
           $app = Add-PnPApp -Path $packageFile.FullName -Publish -Overwrite
+          $uploadDuration = (Get-Date) - $uploadStartTime
           
           if ($app) {
-            Write-Host "✅ Successfully deployed $($packageFile.Name) to SharePoint App Catalog"
+            Write-Host ""
+            Write-Host "=============================================="
+            Write-Host "✅ DEPLOYMENT SUCCESSFUL"
+            Write-Host "=============================================="
+            Write-Host "Package: $($packageFile.Name)"
+            Write-Host "Package Size: $([math]::Round($packageFile.Length / 1MB, 2)) MB"
             Write-Host "App ID: $($app.Id)"
             Write-Host "App Title: $($app.Title)"
             Write-Host "App Version: $($app.AppVersion)"
+            Write-Host "Upload Duration: $($uploadDuration.TotalSeconds) seconds"
+            Write-Host "Deployed to: $env:SPO_URL"
+            Write-Host "Deployment Completed: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss UTC')"
+            Write-Host "=============================================="
             
             # Set deployment summary
             $deploymentSummary = @"
-        ## 🚀 Deployment Summary
+        ## 🚀 SPFx Solution Deployment Summary
         
-        **Status**: ✅ Success
-        **Package**: $($packageFile.Name)
-        **Package Size**: $([math]::Round($packageFile.Length / 1MB, 2)) MB
-        **App ID**: $($app.Id)
-        **App Title**: $($app.Title)
-        **App Version**: $($app.AppVersion)
-        **Deployed to**: $env:SPO_URL
-        **Date**: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss UTC')
+        **Status**: ✅ **SUCCESSFUL**
         
-        The SPFx solution has been successfully uploaded to the SharePoint App Catalog and is ready for use.
+        ### Deployment Details
+        - **Package**: $($packageFile.Name)
+        - **Package Size**: $([math]::Round($packageFile.Length / 1MB, 2)) MB
+        - **App ID**: $($app.Id)
+        - **App Title**: $($app.Title)
+        - **App Version**: $($app.AppVersion)
+        - **Upload Duration**: $($uploadDuration.TotalSeconds) seconds
+        - **Deployed to**: $env:SPO_URL
+        - **Workflow Run**: ${{ github.run_number }}
+        - **Commit SHA**: ${{ github.sha }}
+        - **Deployment Date**: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss UTC')
+        
+        ### SharePoint App Catalog
+        The SPFx solution has been successfully uploaded to the SharePoint App Catalog at **$env:SPO_URL** and is ready for use.
         
         ### Next Steps
-        1. Navigate to your SharePoint App Catalog to verify the deployment
-        2. The app is automatically published and available for installation
-        3. Add the web part to SharePoint pages as needed
+        1. 🔍 Navigate to your SharePoint App Catalog to verify the deployment
+        2. ✅ The app is automatically published and available for installation
+        3. 🎯 Add the web part to SharePoint pages as needed
+        4. 📋 The solution includes multiple web parts: External User Manager, Meeting Room Booking, Inventory Product Catalog, Timesheet Management, and AI-Powered FAQ
+        
+        ### Deployment Logs
+        Check the workflow logs above for detailed deployment information and any additional output.
         "@
             
             Write-Host $deploymentSummary
@@ -217,15 +247,40 @@ jobs:
           }
           
         } catch {
-          Write-Host "❌ Deployment failed: $($_.Exception.Message)"
+          Write-Host ""
+          Write-Host "=============================================="
+          Write-Host "❌ DEPLOYMENT FAILED"
+          Write-Host "=============================================="
+          Write-Host "Error: $($_.Exception.Message)"
+          Write-Host "Workflow Run: ${{ github.run_number }}"
+          Write-Host "Commit SHA: ${{ github.sha }}"
+          Write-Host "Failed at: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss UTC')"
+          Write-Host "SharePoint URL: $env:SPO_URL"
+          Write-Host "=============================================="
           
           $errorSummary = @"
-        ## ❌ Deployment Failed
+        ## ❌ SPFx Solution Deployment Failed
         
-        **Error**: $($_.Exception.Message)
-        **Date**: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss UTC')
+        **Status**: ❌ **FAILED**
         
-        Please check the workflow logs for detailed error information.
+        ### Error Details
+        - **Error**: $($_.Exception.Message)
+        - **SharePoint URL**: $env:SPO_URL
+        - **Workflow Run**: ${{ github.run_number }}
+        - **Commit SHA**: ${{ github.sha }}
+        - **Failed at**: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss UTC')
+        
+        ### Troubleshooting
+        1. 🔍 Check the workflow logs above for detailed error information
+        2. 🔐 Verify that repository secrets (SPO_URL, SPO_USERNAME, SPO_PASSWORD) are correctly configured
+        3. 📋 Ensure the SharePoint account has sufficient permissions for App Catalog management
+        4. 🌐 Confirm that the SharePoint tenant URL is accessible and correct
+        5. 🔄 Try running the deployment again if this was a temporary issue
+        
+        ### Repository Secrets Required
+        - **SPO_URL**: SharePoint tenant URL (e.g., https://turqoisecms-admin.sharepoint.com)
+        - **SPO_USERNAME**: SharePoint admin username
+        - **SPO_PASSWORD**: SharePoint admin password (use app password if MFA enabled)
         "@
           
           Write-Host $errorSummary

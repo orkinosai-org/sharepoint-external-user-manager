@@ -31,8 +31,8 @@ Before using this workflow, you must configure the following secrets in your Git
 
 | Secret Name | Description | Example |
 |-------------|-------------|---------|
-| `SPO_URL` | SharePoint tenant URL | `https://contoso.sharepoint.com` |
-| `SPO_USERNAME` | SharePoint admin username | `admin@contoso.onmicrosoft.com` |
+| `SPO_URL` | SharePoint tenant URL | `https://turqoisecms-admin.sharepoint.com` |
+| `SPO_USERNAME` | SharePoint admin username | `admin@turqoisecms-admin.onmicrosoft.com` |
 | `SPO_PASSWORD` | SharePoint admin password | `YourSecurePassword123!` |
 
 ### Setting Up Repository Secrets
