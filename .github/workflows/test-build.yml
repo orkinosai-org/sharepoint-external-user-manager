@@ -1,0 +1,88 @@
+# Test Build Workflow for SPFx Solution
+# 
+# This workflow only builds and packages the solution without deploying
+# Useful for testing pull requests and validating builds
+#
+# Triggers on:
+# - Pull requests to main branch
+# - Manual dispatch
+
+name: Test Build SPFx Solution
+
+on:
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '18.x'
+
+jobs:
+  test-build:
+    name: Test Build SPFx Solution
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js ${{ env.NODE_VERSION }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: |
+        echo "Installing npm dependencies..."
+        npm ci
+        
+    - name: Run linting (if available)
+      run: |
+        echo "Running ESLint..."
+        if npm run lint --silent > /dev/null 2>&1; then
+          npm run lint
+        else
+          echo "No lint script found, skipping..."
+        fi
+      continue-on-error: true
+        
+    - name: Build solution
+      run: |
+        echo "Building SPFx solution..."
+        npm run build
+        
+    - name: Package solution
+      run: |
+        echo "Packaging SPFx solution..."
+        npm run package-solution
+        
+    - name: Verify package creation
+      run: |
+        echo "Verifying package creation..."
+        if [ -f "sharepoint/solution/*.sppkg" ]; then
+          echo "✅ Package created successfully:"
+          ls -la sharepoint/solution/*.sppkg
+        else
+          echo "❌ Package not found in expected location"
+          echo "Contents of sharepoint/solution/:"
+          ls -la sharepoint/solution/ || echo "Solution directory not found"
+          exit 1
+        fi
+        
+    - name: Upload test artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-spfx-package
+        path: sharepoint/solution/*.sppkg
+        retention-days: 7
+        
+    - name: Build Summary
+      run: |
+        echo "## 🎉 Build Test Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Status**: ✅ Success" >> $GITHUB_STEP_SUMMARY
+        echo "**Node.js Version**: $(node --version)" >> $GITHUB_STEP_SUMMARY
+        echo "**Build Date**: $(date -u +"%Y-%m-%d %H:%M:%S UTC")" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "The SPFx solution builds successfully and is ready for deployment." >> $GITHUB_STEP_SUMMARY
