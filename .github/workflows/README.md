@@ -110,6 +110,33 @@ To view detailed logs:
 2. Click on the failed workflow run
 3. Expand the failed step to see detailed error messages
 
+#### Common Troubleshooting Steps
+
+1. **Test Connection Manually**:
+   ```powershell
+   # Test PowerShell connection locally
+   Install-Module -Name PnP.PowerShell -Force
+   Connect-PnPOnline -Url "https://yourtenant.sharepoint.com" -Interactive
+   Get-PnPApp
+   ```
+
+2. **Verify App Catalog Access**:
+   - Ensure the service account can access `https://yourtenant.sharepoint.com/sites/appcatalog`
+   - Check that the App Catalog is properly configured
+   - Verify sufficient storage space in the App Catalog
+
+3. **Check Package File**:
+   - Verify the `.sppkg` file is created correctly in the build step
+   - Check the package size (should be > 0 bytes)
+   - Ensure the package isn't corrupted
+
+4. **Authentication Debugging**:
+   ```powershell
+   # Check account status
+   Get-PnPTenantServicePrincipal
+   Get-PnPUser -Identity "admin@tenant.onmicrosoft.com"
+   ```
+
 ### Security Considerations
 
 - **Secrets Management**: Never commit credentials to the repository

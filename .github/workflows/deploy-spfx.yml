@@ -80,6 +80,39 @@ jobs:
       run: |
         Write-Host "Installing PnP PowerShell module..."
         Install-Module -Name PnP.PowerShell -Force -Scope CurrentUser -AllowClobber
+        Write-Host "PnP PowerShell version: $(Get-Module -Name PnP.PowerShell -ListAvailable | Select-Object -ExpandProperty Version)"
+        
+    - name: Validate deployment prerequisites
+      shell: pwsh
+      env:
+        SPO_URL: ${{ secrets.SPO_URL }}
+        SPO_USERNAME: ${{ secrets.SPO_USERNAME }}
+        SPO_PASSWORD: ${{ secrets.SPO_PASSWORD }}
+      run: |
+        # Check if required secrets are provided
+        if (-not $env:SPO_URL) {
+          Write-Host "❌ SPO_URL secret is not configured"
+          exit 1
+        }
+        if (-not $env:SPO_USERNAME) {
+          Write-Host "❌ SPO_USERNAME secret is not configured"
+          exit 1
+        }
+        if (-not $env:SPO_PASSWORD) {
+          Write-Host "❌ SPO_PASSWORD secret is not configured"
+          exit 1
+        }
+        
+        # Check if package file exists
+        $packageFiles = Get-ChildItem -Path "./solution" -Filter "*.sppkg" -ErrorAction SilentlyContinue
+        if (-not $packageFiles) {
+          Write-Host "❌ No .sppkg file found in solution directory"
+          Write-Host "Contents of solution directory:"
+          Get-ChildItem -Path "./solution" -Force
+          exit 1
+        }
+        
+        Write-Host "✅ All prerequisites validated"
         
     - name: Deploy to SharePoint App Catalog
       shell: pwsh
@@ -90,13 +123,36 @@ jobs:
       run: |
         try {
           Write-Host "Connecting to SharePoint Online..."
+          Write-Host "SharePoint URL: $env:SPO_URL"
+          Write-Host "Username: $env:SPO_USERNAME"
           
           # Convert password to secure string
           $securePassword = ConvertTo-SecureString $env:SPO_PASSWORD -AsPlainText -Force
           $credentials = New-Object System.Management.Automation.PSCredential($env:SPO_USERNAME, $securePassword)
           
-          # Connect to SharePoint Online
-          Connect-PnPOnline -Url $env:SPO_URL -Credentials $credentials
+          # Connect to SharePoint Online with retry logic
+          $maxRetries = 3
+          $retryCount = 0
+          $connected = $false
+          
+          while (-not $connected -and $retryCount -lt $maxRetries) {
+            try {
+              Connect-PnPOnline -Url $env:SPO_URL -Credentials $credentials
+              $connected = $true
+              Write-Host "✅ Successfully connected to SharePoint Online"
+            } catch {
+              $retryCount++
+              Write-Host "⚠️ Connection attempt $retryCount failed: $($_.Exception.Message)"
+              if ($retryCount -lt $maxRetries) {
+                Write-Host "Retrying in 10 seconds..."
+                Start-Sleep -Seconds 10
+              }
+            }
+          }
+          
+          if (-not $connected) {
+            throw "Failed to connect to SharePoint Online after $maxRetries attempts"
+          }
           
           # Find the .sppkg file
           $packageFile = Get-ChildItem -Path "./solution" -Filter "*.sppkg" | Select-Object -First 1
@@ -106,6 +162,19 @@ jobs:
           }
           
           Write-Host "Found package file: $($packageFile.Name)"
+          Write-Host "Package size: $([math]::Round($packageFile.Length / 1MB, 2)) MB"
+          
+          # Check if app already exists and get info
+          $existingApp = $null
+          try {
+            $allApps = Get-PnPApp
+            $existingApp = $allApps | Where-Object { $_.Title -eq "sharepoint-external-user-manager-client-side-solution" }
+            if ($existingApp) {
+              Write-Host "Existing app found: $($existingApp.Title) (Version: $($existingApp.AppVersion))"
+            }
+          } catch {
+            Write-Host "Could not retrieve existing apps list: $($_.Exception.Message)"
+          }
           
           # Upload and publish the app
           Write-Host "Uploading package to app catalog..."
@@ -115,6 +184,7 @@ jobs:
             Write-Host "✅ Successfully deployed $($packageFile.Name) to SharePoint App Catalog"
             Write-Host "App ID: $($app.Id)"
             Write-Host "App Title: $($app.Title)"
+            Write-Host "App Version: $($app.AppVersion)"
             
             # Set deployment summary
             $deploymentSummary = @"
@@ -122,12 +192,19 @@ jobs:
         
         **Status**: ✅ Success
         **Package**: $($packageFile.Name)
+        **Package Size**: $([math]::Round($packageFile.Length / 1MB, 2)) MB
         **App ID**: $($app.Id)
         **App Title**: $($app.Title)
+        **App Version**: $($app.AppVersion)
         **Deployed to**: $env:SPO_URL
         **Date**: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss UTC')
         
         The SPFx solution has been successfully uploaded to the SharePoint App Catalog and is ready for use.
+        
+        ### Next Steps
+        1. Navigate to your SharePoint App Catalog to verify the deployment
+        2. The app is automatically published and available for installation
+        3. Add the web part to SharePoint pages as needed
         "@
             
             Write-Host $deploymentSummary
@@ -136,7 +213,7 @@ jobs:
             Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value $deploymentSummary
             
           } else {
-            throw "Failed to deploy package to app catalog"
+            throw "Failed to deploy package to app catalog - no app object returned"
           }
           
         } catch {
