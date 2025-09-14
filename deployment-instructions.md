@@ -23,9 +23,9 @@ npm run package-solution
 The project includes a GitHub Actions workflow for automated deployment:
 
 1. **Configure Repository Secrets** (one-time setup):
-   - `SPO_URL`: Your SharePoint tenant URL (e.g., `https://contoso.sharepoint.com`)
-   - `SPO_USERNAME`: SharePoint admin username (e.g., `admin@contoso.onmicrosoft.com`)
-   - `SPO_PASSWORD`: SharePoint admin password
+   - `SPO_URL`: Your SharePoint tenant URL (e.g., `https://turqoisecms-admin.sharepoint.com`)
+   - `SPO_USERNAME`: SharePoint admin username (e.g., `admin@turqoisecms-admin.onmicrosoft.com`)
+   - `SPO_PASSWORD`: SharePoint admin password (use app password if MFA is enabled)
 
 2. **Deploy**: Push changes to the `main` branch or manually trigger the workflow
    - The workflow automatically builds, packages, and deploys the solution
