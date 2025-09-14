@@ -18,6 +18,22 @@ npm run package-solution
 ```
 
 ## Deploy to SharePoint
+
+### Automated Deployment (Recommended)
+The project includes a GitHub Actions workflow for automated deployment:
+
+1. **Configure Repository Secrets** (one-time setup):
+   - `SPO_URL`: Your SharePoint tenant URL (e.g., `https://contoso.sharepoint.com`)
+   - `SPO_USERNAME`: SharePoint admin username (e.g., `admin@contoso.onmicrosoft.com`)
+   - `SPO_PASSWORD`: SharePoint admin password
+
+2. **Deploy**: Push changes to the `main` branch or manually trigger the workflow
+   - The workflow automatically builds, packages, and deploys the solution
+   - View deployment status in the GitHub Actions tab
+
+See [GitHub Actions Workflow Documentation](.github/workflows/README.md) for detailed setup instructions.
+
+### Manual Deployment
 1. Navigate to your SharePoint App Catalog
 2. Upload the generated `.sppkg` file from `solution/` folder
 3. Trust the solution when prompted

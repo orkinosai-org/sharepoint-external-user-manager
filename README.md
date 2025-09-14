@@ -128,6 +128,16 @@ npm run package-solution
 # Package will be in sharepoint/solution/
 ```
 
+### Automated Deployment
+🚀 **GitHub Actions workflow available for automated deployment!**
+
+The project includes a complete CI/CD pipeline that automatically:
+- Builds and packages the SPFx solution
+- Deploys to SharePoint App Catalog
+- Publishes the solution for use
+
+See [GitHub Actions Workflow Documentation](.github/workflows/README.md) for setup instructions.
+
 ### New Developer Onboarding
 📖 **See [DEVELOPER_GUIDE.md](./DEVELOPER_GUIDE.md) for comprehensive setup and development instructions.**
 
