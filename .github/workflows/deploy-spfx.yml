@@ -23,7 +23,7 @@ on:
   workflow_dispatch: # Allow manual triggering
 
 env:
-  NODE_VERSION: '18.x'
+  NODE_VERSION: '18.19.0'
 
 jobs:
   build:
