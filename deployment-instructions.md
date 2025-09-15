@@ -1,9 +1,27 @@
 # SharePoint External User Manager - Deployment Instructions
 
 ## Prerequisites
-- Node.js version 16.13.0+ or 18.17.0+ (but <19.0.0)
+- Node.js version 18.17.1+ (but <19.0.0) - **IMPORTANT: SPFx 1.18.2 does NOT support Node.js 20.x or 21.x**
 - SharePoint Online tenant with App Catalog
 - SPFx development environment
+
+### Node.js Version Requirements
+This project uses SharePoint Framework (SPFx) 1.18.2 which has strict Node.js version requirements:
+- ✅ Supported: Node.js 18.17.1 to 18.x.x
+- ❌ Not Supported: Node.js 19.x, 20.x, 21.x
+
+**Recommended setup:**
+```bash
+# Using nvm (Node Version Manager)
+nvm install 18.19.0
+nvm use 18.19.0
+
+# Verify version
+node --version  # Should output v18.19.0
+```
+
+**Troubleshooting:**
+If you see an error like "Your dev environment is running NodeJS version vX.X.X which does not meet the requirements", ensure you're using Node.js 18.x before running any build commands.
 
 ## Build and Package
 ```bash
