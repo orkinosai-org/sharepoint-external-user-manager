@@ -40,10 +40,26 @@ jobs:
         node-version: ${{ env.NODE_VERSION }}
         cache: 'npm'
         
+    - name: Verify Node.js version
+      run: |
+        echo "Current Node.js version: $(node --version)"
+        echo "Current npm version: $(npm --version)"
+        echo "Expected Node.js version: ${{ env.NODE_VERSION }}"
+        # Verify Node.js version matches expected
+        if [[ "$(node --version)" != "v${{ env.NODE_VERSION }}" ]]; then
+          echo "❌ Node.js version mismatch!"
+          echo "Expected: v${{ env.NODE_VERSION }}"
+          echo "Actual: $(node --version)"
+          exit 1
+        fi
+        echo "✅ Node.js version verified"
+        
     - name: Install dependencies
       run: |
         echo "Installing npm dependencies..."
-        npm ci
+        echo "Node.js version: $(node --version)"
+        echo "npm version: $(npm --version)"
+        npm ci --no-optional --legacy-peer-deps
         
     - name: Build solution
       run: |
