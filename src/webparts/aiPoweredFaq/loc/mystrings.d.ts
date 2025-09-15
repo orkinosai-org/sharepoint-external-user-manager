@@ -11,5 +11,5 @@ declare interface IAiPoweredFaqWebPartStrings {
 
 declare module 'AiPoweredFaqWebPartStrings' {
   const strings: IAiPoweredFaqWebPartStrings;
-  export = strings;
+  export default strings;
 }

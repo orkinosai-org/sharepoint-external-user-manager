@@ -1,4 +1,4 @@
-import { IMeetingRoomBookingWebPartStrings } from 'MeetingRoomBookingWebPartStrings';
+import IMeetingRoomBookingWebPartStrings from 'MeetingRoomBookingWebPartStrings';
 
 const strings: IMeetingRoomBookingWebPartStrings = {
   PropertyPaneDescription: "Meeting Room & Resource Booking Configuration",
@@ -12,4 +12,4 @@ const strings: IMeetingRoomBookingWebPartStrings = {
   RequireApprovalLabel: "Require Approval for Bookings"
 };
 
-export = strings;
+export default strings;

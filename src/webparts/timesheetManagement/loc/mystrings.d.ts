@@ -6,5 +6,5 @@ declare interface ITimesheetManagementWebPartStrings {
 
 declare module 'TimesheetManagementWebPartStrings' {
   const strings: ITimesheetManagementWebPartStrings;
-  export = strings;
+  export default strings;
 }

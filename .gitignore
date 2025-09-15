@@ -71,6 +71,10 @@ solution
 temp
 *.sppkg
 
+# TypeScript compiled outputs
+src/**/*.js
+src/**/*.js.map
+
 # Coverage directory used by tools like istanbul
 coverage
 

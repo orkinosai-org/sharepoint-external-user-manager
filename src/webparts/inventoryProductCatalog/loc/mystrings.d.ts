@@ -6,5 +6,5 @@ declare interface IInventoryProductCatalogWebPartStrings {
 
 declare module 'InventoryProductCatalogWebPartStrings' {
   const strings: IInventoryProductCatalogWebPartStrings;
-  export = strings;
+  export default strings;
 }

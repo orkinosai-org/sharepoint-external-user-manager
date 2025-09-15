@@ -1,4 +1,4 @@
-import { IExternalUserManagerWebPartStrings } from 'ExternalUserManagerWebPartStrings';
+import IExternalUserManagerWebPartStrings from 'ExternalUserManagerWebPartStrings';
 
 const strings: IExternalUserManagerWebPartStrings = {
   PropertyPaneDescription: "External User Manager Configuration",
@@ -6,4 +6,4 @@ const strings: IExternalUserManagerWebPartStrings = {
   DescriptionFieldLabel: "Web part description"
 };
 
-export = strings;
+export default strings;

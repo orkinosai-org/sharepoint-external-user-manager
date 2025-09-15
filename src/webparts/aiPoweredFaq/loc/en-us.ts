@@ -1,4 +1,4 @@
-import { IAiPoweredFaqWebPartStrings } from 'AiPoweredFaqWebPartStrings';
+import IAiPoweredFaqWebPartStrings from 'AiPoweredFaqWebPartStrings';
 
 const strings: IAiPoweredFaqWebPartStrings = {
   PropertyPaneDescription: "AI-Powered FAQ & Knowledge Base Configuration",
@@ -11,4 +11,4 @@ const strings: IAiPoweredFaqWebPartStrings = {
   EnableAnalyticsLabel: "Enable Analytics Tracking"
 };
 
-export = strings;
+export default strings;

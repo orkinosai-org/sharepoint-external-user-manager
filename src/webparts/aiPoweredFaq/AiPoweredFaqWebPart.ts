@@ -8,7 +8,7 @@ import {
 } from '@microsoft/sp-property-pane';
 import { BaseClientSideWebPart } from '@microsoft/sp-webpart-base';
 
-import * as strings from 'AiPoweredFaqWebPartStrings';
+import strings from 'AiPoweredFaqWebPartStrings';
 import AiPoweredFaq from './components/AiPoweredFaq';
 import { IAiPoweredFaqProps } from './components/IAiPoweredFaqProps';
 

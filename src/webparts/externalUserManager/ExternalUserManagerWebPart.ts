@@ -7,7 +7,7 @@ import {
 } from '@microsoft/sp-property-pane';
 import { BaseClientSideWebPart } from '@microsoft/sp-webpart-base';
 
-import * as strings from 'ExternalUserManagerWebPartStrings';
+import strings from 'ExternalUserManagerWebPartStrings';
 import ExternalUserManager from './components/ExternalUserManager';
 import { IExternalUserManagerProps } from './components/IExternalUserManagerProps';
 
