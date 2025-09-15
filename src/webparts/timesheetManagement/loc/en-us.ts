@@ -1,4 +1,4 @@
-import { ITimesheetManagementWebPartStrings } from 'TimesheetManagementWebPartStrings';
+import ITimesheetManagementWebPartStrings from 'TimesheetManagementWebPartStrings';
 
 const strings: ITimesheetManagementWebPartStrings = {
   PropertyPaneDescription: "Timesheet Management Configuration",
@@ -6,4 +6,4 @@ const strings: ITimesheetManagementWebPartStrings = {
   DescriptionFieldLabel: "Web part description"
 };
 
-export = strings;
+export default strings;

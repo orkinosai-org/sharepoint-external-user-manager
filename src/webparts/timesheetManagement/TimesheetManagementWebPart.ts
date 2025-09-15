@@ -7,7 +7,7 @@ import {
 } from '@microsoft/sp-property-pane';
 import { BaseClientSideWebPart } from '@microsoft/sp-webpart-base';
 
-import * as strings from 'TimesheetManagementWebPartStrings';
+import strings from 'TimesheetManagementWebPartStrings';
 import TimesheetManagement from './components/TimesheetManagement';
 import { ITimesheetManagementProps } from './components/ITimesheetManagementProps';
 

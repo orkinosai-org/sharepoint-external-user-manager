@@ -12,5 +12,5 @@ declare interface IMeetingRoomBookingWebPartStrings {
 
 declare module 'MeetingRoomBookingWebPartStrings' {
   const strings: IMeetingRoomBookingWebPartStrings;
-  export = strings;
+  export default strings;
 }

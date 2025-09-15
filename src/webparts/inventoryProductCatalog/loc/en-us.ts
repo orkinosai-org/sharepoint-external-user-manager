@@ -1,4 +1,4 @@
-import { IInventoryProductCatalogWebPartStrings } from 'InventoryProductCatalogWebPartStrings';
+import IInventoryProductCatalogWebPartStrings from 'InventoryProductCatalogWebPartStrings';
 
 const strings: IInventoryProductCatalogWebPartStrings = {
   PropertyPaneDescription: "Inventory & Product Catalog Configuration",
@@ -6,4 +6,4 @@ const strings: IInventoryProductCatalogWebPartStrings = {
   DescriptionFieldLabel: "Web part description"
 };
 
-export = strings;
+export default strings;

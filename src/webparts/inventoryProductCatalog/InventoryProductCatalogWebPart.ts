@@ -7,7 +7,7 @@ import {
 } from '@microsoft/sp-property-pane';
 import { BaseClientSideWebPart } from '@microsoft/sp-webpart-base';
 
-import * as strings from 'InventoryProductCatalogWebPartStrings';
+import strings from 'InventoryProductCatalogWebPartStrings';
 import InventoryProductCatalog from './components/InventoryProductCatalog';
 import { IInventoryProductCatalogProps } from './components/IInventoryProductCatalogProps';
 

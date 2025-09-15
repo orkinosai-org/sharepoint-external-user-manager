@@ -6,5 +6,5 @@ declare interface IExternalUserManagerWebPartStrings {
 
 declare module 'ExternalUserManagerWebPartStrings' {
   const strings: IExternalUserManagerWebPartStrings;
-  export = strings;
+  export default strings;
 }

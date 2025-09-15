@@ -9,7 +9,7 @@ import {
 } from '@microsoft/sp-property-pane';
 import { BaseClientSideWebPart } from '@microsoft/sp-webpart-base';
 
-import * as strings from 'MeetingRoomBookingWebPartStrings';
+import strings from 'MeetingRoomBookingWebPartStrings';
 import MeetingRoomBooking from './components/MeetingRoomBooking';
 import { IMeetingRoomBookingProps } from './components/IMeetingRoomBookingProps';
 
